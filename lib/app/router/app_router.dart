@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/design_system_preview.dart';
+
 final appRouterProvider = Provider<GoRouter>((ref){
   final router = GoRouter(
     initialLocation: '/',
@@ -11,7 +13,7 @@ final appRouterProvider = Provider<GoRouter>((ref){
         path: '/',
         name: 'home',
         builder: (context, state){
-          return const StartupScreen();
+          return const DesignSystemPreview();
         },
       )
     ],
