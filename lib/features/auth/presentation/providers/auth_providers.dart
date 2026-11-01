@@ -5,6 +5,7 @@ import '../../../../core/providers/supabase_provider.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 
+import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 import '../../domain/usecases/sign_in_usecase.dart';
@@ -13,6 +14,7 @@ import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/reset_password_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/watch_auth_state_usecase.dart';
+import '../viewmodels/auth_viewmodel.dart';
 
 // =========================================
 // 1. REMOTE DATA SOURCE PROVIDER
@@ -81,3 +83,12 @@ final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>((ref) {
 final watchAuthStateUseCaseProvider = Provider<WatchAuthStateUseCase>((ref) {
   return WatchAuthStateUseCase(ref.watch(authRepositoryProvider));
 });
+
+// =========================================
+// AUTH VIEWMODEL PROVIDER
+// =========================================
+
+final authViewModelProvider =
+AsyncNotifierProvider<AuthViewModel, UserEntity?>(
+  AuthViewModel.new,
+);
