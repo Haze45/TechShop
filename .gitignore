@@ -23,6 +23,16 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
+# -------------------------------------------------------------------------
+# Secret & Configuration Files (Crucial for Security)
+# -------------------------------------------------------------------------
+google-services.json
+GoogleService-Info.plist
+*.env
+*.jks
+*.keystore
+key.properties
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
@@ -49,3 +59,12 @@ app.*.map.json
 
 # Environment configuration
 env.json
+
+# -------------------------------------------------------------------------
+# Android Specifics
+# -------------------------------------------------------------------------
+.gradle/
+local.properties
+capture_queries_and_responses.txt
+*.apk
+*.aab
