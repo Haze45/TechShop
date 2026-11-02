@@ -254,6 +254,31 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     }
   }
 
+  Future<void> sortProducts(ProductSortOption option) async {
+    final current = _currentState.copyWith(
+      sortOption: option,
+    );
+
+    state = const AsyncLoading();
+
+    try {
+      final products = await _fetchProducts(
+        page: 0,
+        current: current,
+      );
+
+      state = AsyncData(
+        current.copyWith(
+          products: products,
+          currentPage: 0,
+          hasMore: products.length == pageSize,
+        ),
+      );
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+    }
+  }
+
   // Get a single product's details.
   Future<ProductEntity?> getProductDetails(String productId) {
     return ref.read(getProductDetailsUseCaseProvider)(productId);

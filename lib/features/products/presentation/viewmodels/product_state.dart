@@ -1,6 +1,13 @@
 
 import '../../domain/entities/product_entity.dart';
 
+enum ProductSortOption {
+  newest,
+  priceLowToHigh,
+  priceHighToLow,
+  nameAscending,
+}
+
 class ProductState {
   final List<ProductEntity> products;
   final List<ProductEntity> featuredProducts;
@@ -15,6 +22,8 @@ class ProductState {
   final bool hasMore;
   final bool isLoadingMore;
 
+  final ProductSortOption sortOption;
+
   const ProductState({
     this.products = const [],
     this.featuredProducts = const [],
@@ -26,6 +35,7 @@ class ProductState {
     this.currentPage = 0,
     this.hasMore = true,
     this.isLoadingMore = false,
+    this.sortOption = ProductSortOption.newest,
   });
 
   ProductState copyWith({
@@ -41,6 +51,7 @@ class ProductState {
     bool? isLoadingMore,
     bool clearCategory = false,
     bool clearBrand = false,
+    ProductSortOption? sortOption,
   }) {
     return ProductState(
       products: products ?? this.products,
@@ -56,6 +67,7 @@ class ProductState {
       currentPage: currentPage ?? this.currentPage,
       hasMore: hasMore ?? this.hasMore,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      sortOption: sortOption ?? this.sortOption,
     );
   }
 }
