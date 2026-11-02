@@ -10,6 +10,8 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/update_password_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 
+import '../../features/products/presentation/screens/product_details_screen.dart';
+import '../../features/products/presentation/screens/product_list_screen.dart';
 import 'auth_refresh_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -66,11 +68,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/home',
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const ProductListScreen(),
       ),
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/product/:productId',
+        builder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+
+          return ProductDetailsScreen(
+            productId: productId,
+          );
+        },
       ),
     ],
   );

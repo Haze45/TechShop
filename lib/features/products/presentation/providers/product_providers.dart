@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/supabase_provider.dart';
 import '../../data/datasources/product_remote_datasource.dart';
 import '../../data/repositories/product_repository_impl.dart';
+import '../../domain/entities/product_entity.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/usecases/get_products_usecase.dart';
 import '../../domain/usecases/get_featured_products_usecase.dart';
@@ -85,3 +86,8 @@ final productViewModelProvider =
 AsyncNotifierProvider<ProductViewModel, ProductState>(
   ProductViewModel.new,
 );
+
+final productDetailsProvider =
+FutureProvider.family<ProductEntity?, String>((ref, productId) {
+  return ref.watch(getProductDetailsUseCaseProvider)(productId);
+});

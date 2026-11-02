@@ -127,9 +127,10 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
   }
 
   // Filter products by brand.
-  Future<void> filterByBrand(int brandId) async {
+  Future<void> filterByBrand(int? brandId) async {
     final current = _currentState.copyWith(
       selectedBrandId: brandId,
+      clearBrand: brandId == null,
       clearCategory: true,
       searchQuery: '',
     );
