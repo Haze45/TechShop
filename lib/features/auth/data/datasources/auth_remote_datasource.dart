@@ -89,6 +89,16 @@ class AuthRemoteDataSource {
     return UserModel.fromSupabaseUser(user);
   }
 
+  Future<void> updatePassword({
+    required String newPassword,
+  }) async {
+    await supabase.auth.updateUser(
+      UserAttributes(
+        password: newPassword,
+      ),
+    );
+  }
+
   // =========================================
   // 6. AUTH STATE CHANGES
   // =========================================
