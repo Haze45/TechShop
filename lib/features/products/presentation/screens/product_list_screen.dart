@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,9 +18,11 @@ class ProductListScreen extends ConsumerStatefulWidget {
 
 class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -27,10 +31,24 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     await ref.read(productViewModelProvider.notifier).searchProducts(query);
   }
 
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+
+    _debounce = Timer(
+      const Duration(milliseconds: 500),
+          () {
+        _search(query);
+      },
+    );
+  }
+
   Future<void> _clearSearch() async {
+    _debounce?.cancel();
     _searchController.clear();
 
-    await ref.read(productViewModelProvider.notifier).clearFilters();
+    await ref
+        .read(productViewModelProvider.notifier)
+        .clearFilters();
   }
 
   Future<void> _refresh() async {
@@ -109,7 +127,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               child: TextField(
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
-                onSubmitted: _search,
+                onChanged: _onSearchChanged,
+                onSubmitted: (query) {
+                  _debounce?.cancel();
+                  _search(query);
+                },
                 decoration: InputDecoration(
                   hintText: 'Search smartphones and laptops',
                   prefixIcon: const Icon(Icons.search),
