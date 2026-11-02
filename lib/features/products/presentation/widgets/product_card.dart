@@ -1,0 +1,188 @@
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
+import '../../domain/entities/product_entity.dart';
+
+class ProductCard extends StatelessWidget {
+  final ProductEntity product;
+  final VoidCallback? onTap;
+
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.onTap,
+  });
+
+  String get _primaryImage {
+    if (product.images.isEmpty) return '';
+
+    final primaryImages =
+    product.images.where((image) => image.isPrimary);
+
+    if (primaryImages.isNotEmpty) {
+      return primaryImages.first.imageUrl;
+    }
+
+    return product.images.first.imageUrl;
+  }
+
+  String _formatPrice(double price) {
+    return '₹${price.toStringAsFixed(0)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = _primaryImage;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: imageUrl.isEmpty
+                        ? const Center(
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        size: 45,
+                        color: Colors.grey,
+                      ),
+                    )
+                        : CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (context, url) =>
+                      const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) =>
+                      const Center(
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          size: 45,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  if (product.hasDiscount)
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${product.discountPercentage.toStringAsFixed(0)}% OFF',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  if (!product.isInStock)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black54,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'OUT OF STOCK',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _formatPrice(product.price),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      if (product.hasDiscount) ...[
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            _formatPrice(product.compareAtPrice!),
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              decoration: TextDecoration.lineThrough,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    product.isInStock
+                        ? 'In Stock'
+                        : 'Currently unavailable',
+                    style: TextStyle(
+                      color: product.isInStock
+                          ? Colors.green
+                          : Colors.red,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -12,6 +12,8 @@ import '../../domain/usecases/get_products_by_brand_usecase.dart';
 import '../../domain/usecases/search_products_usecase.dart';
 import '../../domain/usecases/get_categories_usecase.dart';
 import '../../domain/usecases/get_brands_usecase.dart';
+import '../viewmodels/product_state.dart';
+import '../viewmodels/product_viewmodel.dart';
 
 // --------------------------------------------------
 // Data Source Provider
@@ -77,3 +79,9 @@ final getCategoriesUseCaseProvider = Provider<GetCategoriesUseCase>((ref) {
 final getBrandsUseCaseProvider = Provider<GetBrandsUseCase>((ref) {
   return GetBrandsUseCase(ref.watch(productRepositoryProvider));
 });
+
+// Product ViewModel Provider
+final productViewModelProvider =
+AsyncNotifierProvider<ProductViewModel, ProductState>(
+  ProductViewModel.new,
+);
