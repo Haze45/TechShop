@@ -8,6 +8,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/profile_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/update_password_screen.dart';
+import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 
 import '../../features/products/presentation/screens/product_details_screen.dart';
@@ -83,6 +84,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             productId: productId,
           );
         },
+      ),
+      GoRoute(
+        path: '/cart',
+        builder: (context, state) => const CartScreen(),
       ),
     ],
   );

@@ -2,9 +2,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
+import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 
 class ProductDetailsScreen extends ConsumerWidget {
   final String productId;
@@ -36,7 +38,7 @@ class ProductDetailsScreen extends ConsumerWidget {
             );
           }
 
-          return _buildProductDetails(context, product);
+          return _buildProductDetails(context, ref, product);
         },
       ),
     );
@@ -44,6 +46,7 @@ class ProductDetailsScreen extends ConsumerWidget {
 
   Widget _buildProductDetails(
       BuildContext context,
+      WidgetRef ref,
       ProductEntity product,
       ) {
     return SingleChildScrollView(
@@ -102,19 +105,45 @@ class ProductDetailsScreen extends ConsumerWidget {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton.icon(
-                    onPressed: product.isInStock
-                        ? () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Cart functionality will be added in the Cart phase.',
+                    onPressed: product.stockQuantity <= 0
+                        ? null
+                        : () async {
+                      try {
+                        await ref
+                            .read(cartViewModelProvider.notifier)
+                            .addToCart(
+                          productId: product.id,
+                          quantity: 1,
+                        );
+
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${product.name} added to cart!'),
+                            action: SnackBarAction(
+                              label: 'View Cart',
+                              onPressed: () {
+                                context.push('/cart');
+                              },
+                            ),
                           ),
-                        ),
-                      );
-                    }
-                        : null,
+                        );
+                      } catch (error) {
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Unable to add product: $error'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
                     icon: const Icon(Icons.shopping_cart_outlined),
-                    label: const Text('Add to Cart'),
+                    label: Text(
+                      product.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Cart',
+                    ),
                   ),
                 ),
               ],
