@@ -118,6 +118,19 @@ class AuthViewModel extends AsyncNotifier<UserEntity?> {
     }
   }
 
+  Future<void> updatePassword({
+    required String newPassword,
+  }) async {
+    try {
+      await ref.read(updatePasswordUseCaseProvider)(
+        newPassword: newPassword,
+      );
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+      rethrow;
+    }
+  }
+
   // =========================================
   // 5. GET CURRENT USER
   // =========================================

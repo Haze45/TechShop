@@ -13,6 +13,7 @@ import '../../domain/usecases/sign_up_usecase.dart';
 import '../../domain/usecases/sign_out_usecase.dart';
 import '../../domain/usecases/reset_password_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
+import '../../domain/usecases/update_password_usecase.dart';
 import '../../domain/usecases/watch_auth_state_usecase.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
@@ -92,3 +93,10 @@ final authViewModelProvider =
 AsyncNotifierProvider<AuthViewModel, UserEntity?>(
   AuthViewModel.new,
 );
+
+final updatePasswordUseCaseProvider =
+Provider<UpdatePasswordUseCase>((ref) {
+  return UpdatePasswordUseCase(
+    ref.watch(authRepositoryProvider),
+  );
+});

@@ -27,6 +27,11 @@ abstract class AuthRepository {
   // Current user
   UserEntity? getCurrentUser();
 
+  Future<void> updatePassword({
+    required String newPassword,
+  });
+
   // Authentication state
   Stream<UserEntity?> get authStateChanges;
+
 }
