@@ -10,10 +10,12 @@ class GetProductsUseCase {
   Future<List<ProductEntity>> call({
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) {
     return repository.getProducts(
       page: page,
       limit: limit,
+      sortOption: sortOption,
     );
   }
 }

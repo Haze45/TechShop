@@ -48,8 +48,13 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
   }) {
     final query = current.searchQuery.trim();
 
+    final sortOption = current.sortOption.name;
+
     if (query.isNotEmpty) {
-      return ref.read(searchProductsUseCaseProvider)(query);
+      return ref.read(searchProductsUseCaseProvider)(
+        query,
+        sortOption: sortOption,
+      );
     }
 
     if (current.selectedCategoryId != null) {
@@ -57,6 +62,7 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
         categoryId: current.selectedCategoryId!,
         page: page,
         limit: pageSize,
+        sortOption: sortOption,
       );
     }
 
@@ -65,12 +71,14 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
         brandId: current.selectedBrandId!,
         page: page,
         limit: pageSize,
+        sortOption: sortOption,
       );
     }
 
     return ref.read(getProductsUseCaseProvider)(
       page: page,
       limit: pageSize,
+      sortOption: sortOption,
     );
   }
 

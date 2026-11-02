@@ -11,11 +11,13 @@ class GetProductsByBrandUseCase {
     required int brandId,
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) {
     return repository.getProductsByBrand(
       brandId: brandId,
       page: page,
       limit: limit,
+      sortOption: sortOption,
     );
   }
 }

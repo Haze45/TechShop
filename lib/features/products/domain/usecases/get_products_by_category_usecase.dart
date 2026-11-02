@@ -11,11 +11,13 @@ class GetProductsByCategoryUseCase {
     required int categoryId,
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) {
     return repository.getProductsByCategory(
       categoryId: categoryId,
       page: page,
       limit: limit,
+      sortOption: sortOption,
     );
   }
 }

@@ -12,6 +12,7 @@ class ProductRemoteDataSource {
   Future<List<ProductModel>> getProducts({
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) async {
     final from = page * limit;
     final to = from + limit - 1;
@@ -25,8 +26,7 @@ class ProductRemoteDataSource {
 
     return response
         .map<ProductModel>(
-          (json) => ProductModel.fromJson(json),
-    )
+          (json) => ProductModel.fromJson(json),)
         .toList();
   }
 
@@ -68,6 +68,7 @@ class ProductRemoteDataSource {
     required int categoryId,
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) async {
     final from = page * limit;
     final to = from + limit - 1;
@@ -92,6 +93,7 @@ class ProductRemoteDataSource {
     required int brandId,
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) async {
     final from = page * limit;
     final to = from + limit - 1;
@@ -112,7 +114,10 @@ class ProductRemoteDataSource {
   }
 
   // Search products by name.
-  Future<List<ProductModel>> searchProducts(String query) async {
+  Future<List<ProductModel>> searchProducts(
+      String query,{
+        String sortOption = 'newest',
+      }) async {
     final searchQuery = query.trim();
 
     if (searchQuery.isEmpty) {
@@ -153,5 +158,25 @@ class ProductRemoteDataSource {
         .order('name');
 
     return List<Map<String, dynamic>>.from(response);
+  }
+
+  PostgrestTransformBuilder<List<Map<String, dynamic>>> _applySorting(
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> query,
+      String sortOption,
+      ) {
+    switch (sortOption) {
+      case 'priceLowToHigh':
+        return query.order('price', ascending: true);
+
+      case 'priceHighToLow':
+        return query.order('price', ascending: false);
+
+      case 'nameAscending':
+        return query.order('name', ascending: true);
+
+      case 'newest':
+      default:
+        return query.order('created_at', ascending: false);
+    }
   }
 }

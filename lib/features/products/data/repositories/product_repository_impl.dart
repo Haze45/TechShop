@@ -11,6 +11,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<List<ProductEntity>> getProducts({
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) {
     return remoteDataSource.getProducts(
       page: page,
@@ -37,6 +38,7 @@ class ProductRepositoryImpl implements ProductRepository {
     required int categoryId,
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) {
     return remoteDataSource.getProductsByCategory(
       categoryId: categoryId,
@@ -50,6 +52,7 @@ class ProductRepositoryImpl implements ProductRepository {
     required int brandId,
     int page = 0,
     int limit = 10,
+    String sortOption = 'newest',
   }) {
     return remoteDataSource.getProductsByBrand(
       brandId: brandId,
@@ -59,7 +62,11 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> searchProducts(String query) {
+  Future<List<ProductEntity>> searchProducts(
+      String query,{
+        String sortOption = 'newest',
+      }
+      ) {
     return remoteDataSource.searchProducts(query);
   }
 

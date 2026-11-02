@@ -7,7 +7,7 @@ class SearchProductsUseCase {
 
   SearchProductsUseCase(this.repository);
 
-  Future<List<ProductEntity>> call(String query) {
-    return repository.searchProducts(query);
+  Future<List<ProductEntity>> call(String query, {String sortOption = 'newest'}) {
+    return repository.searchProducts(query,sortOption: sortOption,);
   }
 }

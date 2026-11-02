@@ -155,6 +155,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             child: _buildBrandFilters(productState),
           ),
 
+          // Product Sorting
+          SliverToBoxAdapter(
+            child: _buildSortDropdown(productState),
+          ),
+
           // Featured products
           if (productState.searchQuery.isEmpty &&
               productState.selectedCategoryId == null &&
@@ -372,6 +377,61 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSortDropdown(ProductState state) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const Text(
+            'Sort by:',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          DropdownButton<ProductSortOption>(
+            value: state.sortOption,
+            underline: const SizedBox(),
+            borderRadius: BorderRadius.circular(12),
+
+            items: const [
+              DropdownMenuItem(
+                value: ProductSortOption.newest,
+                child: Text('Newest First'),
+              ),
+              DropdownMenuItem(
+                value: ProductSortOption.priceLowToHigh,
+                child: Text('Price: Low to High'),
+              ),
+              DropdownMenuItem(
+                value: ProductSortOption.priceHighToLow,
+                child: Text('Price: High to Low'),
+              ),
+              DropdownMenuItem(
+                value: ProductSortOption.nameAscending,
+                child: Text('Name: A to Z'),
+              ),
+            ],
+
+            onChanged: (option) {
+              if (option != null) {
+                ref
+                    .read(productViewModelProvider.notifier)
+                    .sortProducts(option);
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
