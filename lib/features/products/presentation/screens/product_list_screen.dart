@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
 import '../viewmodels/product_state.dart';
@@ -58,6 +59,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     final productAsync = ref.watch(productViewModelProvider);
+    final cartAsync = ref.watch(cartViewModelProvider);
+    final cartItemCount = cartAsync.value?.totalItems ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -76,7 +79,13 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             onPressed: () {
               context.push('/cart');
             },
-            icon: const Icon(Icons.shopping_cart_outlined),
+            icon: Badge(
+              isLabelVisible: cartItemCount > 0,
+              label: Text('$cartItemCount'),
+              child: const Icon(
+                Icons.shopping_cart_outlined,
+              ),
+            ),
             tooltip: 'My Cart',
           ),
         ],

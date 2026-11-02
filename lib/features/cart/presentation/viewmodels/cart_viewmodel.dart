@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers/supabase_provider.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../domain/entities/cart_entity.dart';
 import '../providers/cart_providers.dart';
 import 'cart_state.dart';
@@ -8,16 +9,16 @@ import 'cart_state.dart';
 class CartViewModel extends AsyncNotifier<CartState> {
   @override
   Future<CartState> build() async {
-    final supabase = ref.read(supabaseProvider);
+    final authState  = ref.read(authViewModelProvider);
 
-    final user = supabase.auth.currentUser;
+    final user = authState.value;
 
     // No cart when the user is logged out.
     if (user == null) {
       return const CartState();
     }
 
-    final cart = await ref.read(getCartUseCaseProvider)(user.id);
+    final cart = await ref.read(getCartUseCaseProvider).call(user.id);
 
     return CartState(cart: cart);
   }
