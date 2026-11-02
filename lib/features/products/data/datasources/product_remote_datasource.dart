@@ -113,17 +113,25 @@ class ProductRemoteDataSource {
 
   // Search products by name.
   Future<List<ProductModel>> searchProducts(String query) async {
+    final searchQuery = query.trim();
+
+    if (searchQuery.isEmpty) {
+      return [];
+    }
+
     final response = await supabase
         .from('products')
         .select('*, product_images(*)')
         .eq('is_active', true)
-        .ilike('name', '%$query%')
-        .order('name');
+        .or(
+      'name.ilike.%$searchQuery%,'
+          'description.ilike.%$searchQuery%,'
+          'sku.ilike.%$searchQuery%',
+    )
+        .order('created_at', ascending: false);
 
     return response
-        .map<ProductModel>(
-          (json) => ProductModel.fromJson(json),
-    )
+        .map<ProductModel>((json) => ProductModel.fromJson(json))
         .toList();
   }
 
