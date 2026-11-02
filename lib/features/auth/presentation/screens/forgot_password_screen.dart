@@ -33,6 +33,7 @@ class _ForgotPasswordScreenState
     try {
       await ref.read(authViewModelProvider.notifier).resetPassword(
         email: _emailController.text.trim(),
+        redirectTo: 'com.example.tech_shop://reset-password/',
       );
 
       if (!mounted) return;
