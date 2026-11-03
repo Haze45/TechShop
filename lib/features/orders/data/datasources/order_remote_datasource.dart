@@ -48,4 +48,32 @@ class OrderRemoteDataSource {
 
     return OrderModel.fromJson(response);
   }
+
+  // =========================================
+// CREATE ORDER
+// =========================================
+
+  Future<String> createOrder({
+    required Map<String, dynamic> shippingAddress,
+    String? notes,
+  }) async {
+    final response = await supabase.rpc(
+      'create_order',
+      params: {
+        'p_shipping_address': shippingAddress,
+        'p_notes': notes,
+      },
+    );
+
+    return response.toString();
+  }
+
+  Future<void> cancelOrder(String orderId) async {
+    await supabase.rpc(
+      'cancel_order',
+      params: {
+        'p_order_id': orderId,
+      },
+    );
+  }
 }

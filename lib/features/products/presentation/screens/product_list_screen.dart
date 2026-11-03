@@ -95,6 +95,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               child: const Icon(Icons.favorite_border),
             ),
           ),
+          IconButton(
+            tooltip: 'My Orders',
+            onPressed: () => context.push('/orders'),
+            icon: const Icon(Icons.receipt_long_outlined),
+          ),
         ],
       ),
 

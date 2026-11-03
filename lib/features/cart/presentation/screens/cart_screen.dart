@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/cart_item_entity.dart';
 import '../viewmodels/cart_state.dart';
@@ -303,18 +304,12 @@ class CartScreen extends ConsumerWidget {
             height: 50,
             child: ElevatedButton(
               onPressed:
-                  cartState.isUpdating ||
-                      cartState.cart!.items.any((item) => !item.isInStock)
+              cartState.isUpdating ||
+                  cartState.cart!.items.any((item) => !item.isInStock)
                   ? null
                   : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Checkout will be implemented in a later phase.',
-                          ),
-                        ),
-                      );
-                    },
+                context.push('/checkout');
+              },
               child: const Text(
                 'Proceed to Checkout',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

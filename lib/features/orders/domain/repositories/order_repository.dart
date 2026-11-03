@@ -7,4 +7,11 @@ abstract class OrderRepository {
     required String orderId,
     required String userId,
   });
+
+  Future<String> createOrder({
+    required Map<String, dynamic> shippingAddress,
+    String? notes,
+  });
+
+  Future<void> cancelOrder(String orderId);
 }

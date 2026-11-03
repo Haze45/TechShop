@@ -7,6 +7,8 @@ import '../../data/repositories/order_repository_impl.dart';
 
 import '../../domain/repositories/order_repository.dart';
 
+import '../../domain/usecases/cancel_order_usecase.dart';
+import '../../domain/usecases/create_order_usecase.dart';
 import '../../domain/usecases/get_orders_usecase.dart';
 import '../../domain/usecases/get_order_by_id_usecase.dart';
 
@@ -51,4 +53,20 @@ Provider<GetOrderByIdUseCase>((ref) {
 
   return GetOrderByIdUseCase(repository);
 
+});
+
+// =========================================
+// CREATE ORDER USE CASE PROVIDER
+// =========================================
+
+final createOrderUseCaseProvider =
+Provider<CreateOrderUseCase>((ref) {
+  final repository = ref.watch(orderRepositoryProvider);
+
+  return CreateOrderUseCase(repository);
+});
+
+final cancelOrderUseCaseProvider = Provider<CancelOrderUseCase>((ref) {
+  final repository = ref.watch(orderRepositoryProvider);
+  return CancelOrderUseCase(repository);
 });
