@@ -5,10 +5,7 @@ class RemoveFromWishlistUseCase {
 
   RemoveFromWishlistUseCase(this.repository);
 
-  Future<void> call({
-    required String userId,
-    required String productId,
-  }) async {
+  Future<void> call({required String userId, required String productId}) async {
     if (userId.isEmpty) {
       throw ArgumentError('User ID cannot be empty.');
     }
@@ -17,9 +14,6 @@ class RemoveFromWishlistUseCase {
       throw ArgumentError('Product ID cannot be empty.');
     }
 
-    await repository.removeFromWishlist(
-      userId: userId,
-      productId: productId,
-    );
+    await repository.removeFromWishlist(userId: userId, productId: productId);
   }
 }

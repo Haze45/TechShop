@@ -1,4 +1,3 @@
-
 import '../../domain/entities/product_image_entity.dart';
 
 class ProductImageModel extends ProductImageEntity {

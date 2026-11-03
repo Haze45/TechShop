@@ -1,4 +1,3 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -7,18 +6,21 @@ import '../../domain/entities/product_entity.dart';
 class ProductCard extends StatelessWidget {
   final ProductEntity product;
   final VoidCallback? onTap;
+  final bool isWishlisted;
+  final VoidCallback? onWishlistTap;
 
   const ProductCard({
     super.key,
     required this.product,
     this.onTap,
+    this.isWishlisted = false,
+    this.onWishlistTap,
   });
 
   String get _primaryImage {
     if (product.images.isEmpty) return '';
 
-    final primaryImages =
-    product.images.where((image) => image.isPrimary);
+    final primaryImages = product.images.where((image) => image.isPrimary);
 
     if (primaryImages.isNotEmpty) {
       return primaryImages.first.imageUrl;
@@ -38,9 +40,7 @@ class ProductCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         child: Column(
@@ -52,29 +52,25 @@ class ProductCard extends StatelessWidget {
                   Positioned.fill(
                     child: imageUrl.isEmpty
                         ? const Center(
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 45,
-                        color: Colors.grey,
-                      ),
-                    )
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 45,
+                              color: Colors.grey,
+                            ),
+                          )
                         : CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) =>
-                      const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      ),
-                      errorWidget: (context, url, error) =>
-                      const Center(
-                        child: Icon(
-                          Icons.broken_image_outlined,
-                          size: 45,
-                        ),
-                      ),
-                    ),
+                            imageUrl: imageUrl,
+                            fit: BoxFit.contain,
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            errorWidget: (context, url, error) => const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                size: 45,
+                              ),
+                            ),
+                          ),
                   ),
 
                   if (product.hasDiscount)
@@ -100,6 +96,31 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        onPressed: onWishlistTap,
+                        icon: Icon(
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
+                          color: isWishlisted ? Colors.red : Colors.grey,
+                        ),
+                        iconSize: 20,
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                        ),
+                        padding: EdgeInsets.zero,
+                        tooltip: isWishlisted
+                            ? 'Remove from wishlist'
+                            : 'Add to wishlist',
+                      ),
+                    ),
+                  ),
 
                   if (!product.isInStock)
                     Positioned.fill(
@@ -138,12 +159,8 @@ class ProductCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           _formatPrice(product.price),
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
 
@@ -167,13 +184,9 @@ class ProductCard extends StatelessWidget {
                   const SizedBox(height: 4),
 
                   Text(
-                    product.isInStock
-                        ? 'In Stock'
-                        : 'Currently unavailable',
+                    product.isInStock ? 'In Stock' : 'Currently unavailable',
                     style: TextStyle(
-                      color: product.isInStock
-                          ? Colors.green
-                          : Colors.red,
+                      color: product.isInStock ? Colors.green : Colors.red,
                       fontSize: 11,
                     ),
                   ),

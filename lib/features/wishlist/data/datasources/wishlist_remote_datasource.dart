@@ -1,4 +1,3 @@
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/wishlist_model.dart';
@@ -25,9 +24,7 @@ class WishlistRemoteDataSource {
 
     final newWishlist = await supabase
         .from('wishlists')
-        .insert({
-      'user_id': userId,
-    })
+        .insert({'user_id': userId})
         .select('id')
         .single();
 
@@ -74,13 +71,10 @@ class WishlistRemoteDataSource {
     await supabase
         .from('wishlist_items')
         .upsert(
-      {
-        'wishlist_id': wishlistId,
-        'product_id': productId,
-      },
-      onConflict: 'wishlist_id,product_id',
-      ignoreDuplicates: true,
-    );
+          {'wishlist_id': wishlistId, 'product_id': productId},
+          onConflict: 'wishlist_id,product_id',
+          ignoreDuplicates: true,
+        );
   }
 
   // =========================================

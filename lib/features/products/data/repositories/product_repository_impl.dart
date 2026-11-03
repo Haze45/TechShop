@@ -13,19 +13,12 @@ class ProductRepositoryImpl implements ProductRepository {
     int limit = 10,
     String sortOption = 'newest',
   }) {
-    return remoteDataSource.getProducts(
-      page: page,
-      limit: limit,
-    );
+    return remoteDataSource.getProducts(page: page, limit: limit);
   }
 
   @override
-  Future<List<ProductEntity>> getFeaturedProducts({
-    int limit = 10,
-  }) {
-    return remoteDataSource.getFeaturedProducts(
-      limit: limit,
-    );
+  Future<List<ProductEntity>> getFeaturedProducts({int limit = 10}) {
+    return remoteDataSource.getFeaturedProducts(limit: limit);
   }
 
   @override
@@ -63,10 +56,9 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<List<ProductEntity>> searchProducts(
-      String query,{
-        String sortOption = 'newest',
-      }
-      ) {
+    String query, {
+    String sortOption = 'newest',
+  }) {
     return remoteDataSource.searchProducts(query);
   }
 

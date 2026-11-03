@@ -1,4 +1,3 @@
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/product_model.dart';
@@ -17,23 +16,21 @@ class ProductRemoteDataSource {
     final from = page * limit;
     final to = from + limit - 1;
 
-    final response = await supabase
-        .from('products')
-        .select('*, product_images(*)')
-        .eq('is_active', true)
-        .order('created_at', ascending: false)
-        .range(from, to);
+    final response = await _sortProducts(
+      supabase
+          .from('products')
+          .select('*, product_images(*)')
+          .eq('is_active', true),
+      sortOption,
+    ).range(from, to);
 
     return response
-        .map<ProductModel>(
-          (json) => ProductModel.fromJson(json),)
+        .map<ProductModel>((json) => ProductModel.fromJson(json))
         .toList();
   }
 
   // Fetch featured products.
-  Future<List<ProductModel>> getFeaturedProducts({
-    int limit = 10,
-  }) async {
+  Future<List<ProductModel>> getFeaturedProducts({int limit = 10}) async {
     final response = await supabase
         .from('products')
         .select('*, product_images(*)')
@@ -43,9 +40,7 @@ class ProductRemoteDataSource {
         .limit(limit);
 
     return response
-        .map<ProductModel>(
-          (json) => ProductModel.fromJson(json),
-    )
+        .map<ProductModel>((json) => ProductModel.fromJson(json))
         .toList();
   }
 
@@ -73,18 +68,17 @@ class ProductRemoteDataSource {
     final from = page * limit;
     final to = from + limit - 1;
 
-    final response = await supabase
-        .from('products')
-        .select('*, product_images(*)')
-        .eq('category_id', categoryId)
-        .eq('is_active', true)
-        .order('created_at', ascending: false)
-        .range(from, to);
+    final response = await _sortProducts(
+      supabase
+          .from('products')
+          .select('*, product_images(*)')
+          .eq('category_id', categoryId)
+          .eq('is_active', true),
+      sortOption,
+    ).range(from, to);
 
     return response
-        .map<ProductModel>(
-          (json) => ProductModel.fromJson(json),
-    )
+        .map<ProductModel>((json) => ProductModel.fromJson(json))
         .toList();
   }
 
@@ -98,42 +92,43 @@ class ProductRemoteDataSource {
     final from = page * limit;
     final to = from + limit - 1;
 
-    final response = await supabase
-        .from('products')
-        .select('*, product_images(*)')
-        .eq('brand_id', brandId)
-        .eq('is_active', true)
-        .order('created_at', ascending: false)
-        .range(from, to);
+    final response = await _sortProducts(
+      supabase
+          .from('products')
+          .select('*, product_images(*)')
+          .eq('brand_id', brandId)
+          .eq('is_active', true),
+      sortOption,
+    ).range(from, to);
 
     return response
-        .map<ProductModel>(
-          (json) => ProductModel.fromJson(json),
-    )
+        .map<ProductModel>((json) => ProductModel.fromJson(json))
         .toList();
   }
 
-  // Search products by name.
+  // Search products.
   Future<List<ProductModel>> searchProducts(
-      String query,{
-        String sortOption = 'newest',
-      }) async {
+    String query, {
+    String sortOption = 'newest',
+  }) async {
     final searchQuery = query.trim();
 
     if (searchQuery.isEmpty) {
       return [];
     }
 
-    final response = await supabase
-        .from('products')
-        .select('*, product_images(*)')
-        .eq('is_active', true)
-        .or(
-      'name.ilike.%$searchQuery%,'
-          'description.ilike.%$searchQuery%,'
-          'sku.ilike.%$searchQuery%',
-    )
-        .order('created_at', ascending: false);
+    final response = await _sortProducts(
+      supabase
+          .from('products')
+          .select('*, product_images(*)')
+          .eq('is_active', true)
+          .or(
+            'name.ilike.%$searchQuery%,'
+            'description.ilike.%$searchQuery%,'
+            'sku.ilike.%$searchQuery%',
+          ),
+      sortOption,
+    );
 
     return response
         .map<ProductModel>((json) => ProductModel.fromJson(json))
@@ -142,28 +137,20 @@ class ProductRemoteDataSource {
 
   // Fetch categories.
   Future<List<Map<String, dynamic>>> getCategories() async {
-    final response = await supabase
-        .from('categories')
-        .select()
-        .order('name');
+    final response = await supabase.from('categories').select().order('name');
 
     return List<Map<String, dynamic>>.from(response);
   }
 
   // Fetch brands.
   Future<List<Map<String, dynamic>>> getBrands() async {
-    final response = await supabase
-        .from('brands')
-        .select()
-        .order('name');
+    final response = await supabase.from('brands').select().order('name');
 
     return List<Map<String, dynamic>>.from(response);
   }
 
-  PostgrestTransformBuilder<List<Map<String, dynamic>>> _applySorting(
-      PostgrestTransformBuilder<List<Map<String, dynamic>>> query,
-      String sortOption,
-      ) {
+  // Apply sorting to a product query.
+  dynamic _sortProducts(dynamic query, String sortOption) {
     switch (sortOption) {
       case 'priceLowToHigh':
         return query.order('price', ascending: true);

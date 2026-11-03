@@ -1,9 +1,9 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
@@ -11,31 +11,78 @@ import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 class ProductDetailsScreen extends ConsumerWidget {
   final String productId;
 
-  const ProductDetailsScreen({
-    super.key,
-    required this.productId,
-  });
+  const ProductDetailsScreen({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productAsync = ref.watch(productDetailsProvider(productId));
+    final wishlistAsync = ref.watch(wishlistViewModelProvider);
+
+    final wishlistState = wishlistAsync.value;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product Details'),
+        actions: [
+          IconButton(
+            tooltip: 'Wishlist',
+            onPressed:
+                wishlistAsync.isLoading || wishlistState?.isUpdating == true
+                ? null
+                : () async {
+                    final isWishlisted =
+                        wishlistState?.containsProduct(productId) ?? false;
+
+                    try {
+                      if (isWishlisted) {
+                        await ref
+                            .read(wishlistViewModelProvider.notifier)
+                            .removeFromWishlist(productId);
+                      } else {
+                        await ref
+                            .read(wishlistViewModelProvider.notifier)
+                            .addToWishlist(productId);
+                      }
+
+                      if (!context.mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isWishlisted
+                                ? 'Removed from wishlist'
+                                : 'Added to wishlist',
+                          ),
+                        ),
+                      );
+                    } catch (error) {
+                      if (!context.mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Unable to update wishlist. Please try again.',
+                          ),
+                        ),
+                      );
+                    }
+                  },
+            icon: Icon(
+              wishlistState?.containsProduct(productId) ?? false
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color: Colors.red,
+            ),
+          ),
+        ],
       ),
       body: productAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        error: (error, stackTrace) => Center(
-          child: Text('Unable to load product: $error'),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) =>
+            Center(child: Text('Unable to load product: $error')),
         data: (product) {
           if (product == null) {
-            return const Center(
-              child: Text('Product not found'),
-            );
+            return const Center(child: Text('Product not found'));
           }
 
           return _buildProductDetails(context, ref, product);
@@ -45,10 +92,10 @@ class ProductDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildProductDetails(
-      BuildContext context,
-      WidgetRef ref,
-      ProductEntity product,
-      ) {
+    BuildContext context,
+    WidgetRef ref,
+    ProductEntity product,
+  ) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,41 +155,47 @@ class ProductDetailsScreen extends ConsumerWidget {
                     onPressed: product.stockQuantity <= 0
                         ? null
                         : () async {
-                      try {
-                        await ref
-                            .read(cartViewModelProvider.notifier)
-                            .addToCart(
-                          productId: product.id,
-                          quantity: 1,
-                        );
+                            try {
+                              await ref
+                                  .read(cartViewModelProvider.notifier)
+                                  .addToCart(
+                                    productId: product.id,
+                                    quantity: 1,
+                                  );
 
-                        if (!context.mounted) return;
+                              if (!context.mounted) return;
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${product.name} added to cart!'),
-                            action: SnackBarAction(
-                              label: 'View Cart',
-                              onPressed: () {
-                                context.push('/cart');
-                              },
-                            ),
-                          ),
-                        );
-                      } catch (error) {
-                        if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${product.name} added to cart!',
+                                  ),
+                                  action: SnackBarAction(
+                                    label: 'View Cart',
+                                    onPressed: () {
+                                      context.push('/cart');
+                                    },
+                                  ),
+                                ),
+                              );
+                            } catch (error) {
+                              if (!context.mounted) return;
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Unable to add product: $error'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Unable to add product: $error',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
                     icon: const Icon(Icons.shopping_cart_outlined),
                     label: Text(
-                      product.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Cart',
+                      product.stockQuantity <= 0
+                          ? 'Out of Stock'
+                          : 'Add to Cart',
                     ),
                   ),
                 ),
@@ -180,9 +233,8 @@ class ProductDetailsScreen extends ConsumerWidget {
             child: CachedNetworkImage(
               imageUrl: images[index].imageUrl,
               fit: BoxFit.contain,
-              placeholder: (context, url) => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator()),
               errorWidget: (context, url, error) => const Center(
                 child: Icon(Icons.broken_image_outlined, size: 60),
               ),
@@ -193,10 +245,7 @@ class ProductDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPrice(
-      BuildContext context,
-      ProductEntity product,
-      ) {
+  Widget _buildPrice(BuildContext context, ProductEntity product) {
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
@@ -263,21 +312,17 @@ class ProductDetailsScreen extends ConsumerWidget {
         final label = entry.key
             .replaceAll('_', ' ')
             .split(' ')
-            .map((word) =>
-        word.isEmpty
-            ? word
-            : '${word[0].toUpperCase()}${word.substring(1)}')
+            .map(
+              (word) => word.isEmpty
+                  ? word
+                  : '${word[0].toUpperCase()}${word.substring(1)}',
+            )
             .join(' ');
 
         return Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: Colors.grey.shade300),
-            ),
+            border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,10 +334,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
-              Expanded(
-                flex: 3,
-                child: Text(entry.value.toString()),
-              ),
+              Expanded(flex: 3, child: Text(entry.value.toString())),
             ],
           ),
         );

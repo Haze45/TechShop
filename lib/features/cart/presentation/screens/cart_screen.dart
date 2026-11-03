@@ -70,7 +70,7 @@ class CartScreen extends ConsumerWidget {
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: cart.items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final item = cart.items[index];
 
@@ -138,7 +138,7 @@ class CartScreen extends ConsumerWidget {
                     ? Image.network(
                         primaryImage,
                         fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => const Icon(
+                        errorBuilder: (_, _, _) => const Icon(
                           Icons.image_not_supported_outlined,
                           size: 35,
                         ),

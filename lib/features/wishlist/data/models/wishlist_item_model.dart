@@ -16,9 +16,7 @@ class WishlistItemModel extends WishlistItemEntity {
       wishlistId: json['wishlist_id'].toString(),
       productId: json['product_id'].toString(),
       createdAt: DateTime.parse(json['created_at']),
-      product: ProductModel.fromJson(
-        json['products'] as Map<String, dynamic>,
-      ),
+      product: ProductModel.fromJson(json['products'] as Map<String, dynamic>),
     );
   }
 

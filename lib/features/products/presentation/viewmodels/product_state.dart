@@ -1,12 +1,6 @@
-
 import '../../domain/entities/product_entity.dart';
 
-enum ProductSortOption {
-  newest,
-  priceLowToHigh,
-  priceHighToLow,
-  nameAscending,
-}
+enum ProductSortOption { newest, priceLowToHigh, priceHighToLow, nameAscending }
 
 class ProductState {
   final List<ProductEntity> products;
@@ -61,8 +55,9 @@ class ProductState {
       selectedCategoryId: clearCategory
           ? null
           : selectedCategoryId ?? this.selectedCategoryId,
-      selectedBrandId:
-      clearBrand ? null : selectedBrandId ?? this.selectedBrandId,
+      selectedBrandId: clearBrand
+          ? null
+          : selectedBrandId ?? this.selectedBrandId,
       searchQuery: searchQuery ?? this.searchQuery,
       currentPage: currentPage ?? this.currentPage,
       hasMore: hasMore ?? this.hasMore,

@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/product_entity.dart';
@@ -16,13 +15,11 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
       limit: pageSize,
     );
 
-    final featuredProducts =
-    await ref.read(getFeaturedProductsUseCaseProvider)(
+    final featuredProducts = await ref.read(getFeaturedProductsUseCaseProvider)(
       limit: 10,
     );
 
-    final categories =
-    await ref.read(getCategoriesUseCaseProvider)();
+    final categories = await ref.read(getCategoriesUseCaseProvider)();
 
     final brands = await ref.read(getBrandsUseCaseProvider)();
 
@@ -89,10 +86,7 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     state = const AsyncLoading();
 
     try {
-      final products = await _fetchProducts(
-        page: 0,
-        current: current,
-      );
+      final products = await _fetchProducts(page: 0, current: current);
 
       state = AsyncData(
         current.copyWith(
@@ -117,10 +111,7 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     state = const AsyncLoading();
 
     try {
-      final products = await _fetchProducts(
-        page: 0,
-        current: current,
-      );
+      final products = await _fetchProducts(page: 0, current: current);
 
       state = AsyncData(
         current.copyWith(
@@ -146,10 +137,7 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     state = const AsyncLoading();
 
     try {
-      final products = await _fetchProducts(
-        page: 0,
-        current: current,
-      );
+      final products = await _fetchProducts(page: 0, current: current);
 
       state = AsyncData(
         current.copyWith(
@@ -174,17 +162,10 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     state = const AsyncLoading();
 
     try {
-      final products = await _fetchProducts(
-        page: 0,
-        current: current,
-      );
+      final products = await _fetchProducts(page: 0, current: current);
 
       state = AsyncData(
-        current.copyWith(
-          products: products,
-          currentPage: 0,
-          hasMore: false,
-        ),
+        current.copyWith(products: products, currentPage: 0, hasMore: false),
       );
     } catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
@@ -232,9 +213,7 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
       return;
     }
 
-    state = AsyncData(
-      current.copyWith(isLoadingMore: true),
-    );
+    state = AsyncData(current.copyWith(isLoadingMore: true));
 
     try {
       final nextPage = current.currentPage + 1;
@@ -253,9 +232,7 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
         ),
       );
     } catch (error, stackTrace) {
-      state = AsyncData(
-        current.copyWith(isLoadingMore: false),
-      );
+      state = AsyncData(current.copyWith(isLoadingMore: false));
 
       // Keep the existing product list and expose the error to the caller.
       Error.throwWithStackTrace(error, stackTrace);
@@ -263,17 +240,12 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
   }
 
   Future<void> sortProducts(ProductSortOption option) async {
-    final current = _currentState.copyWith(
-      sortOption: option,
-    );
+    final current = _currentState.copyWith(sortOption: option);
 
     state = const AsyncLoading();
 
     try {
-      final products = await _fetchProducts(
-        page: 0,
-        current: current,
-      );
+      final products = await _fetchProducts(page: 0, current: current);
 
       state = AsyncData(
         current.copyWith(

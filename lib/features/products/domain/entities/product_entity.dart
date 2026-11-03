@@ -46,8 +46,7 @@ class ProductEntity {
 
   bool get isInStock => stockQuantity > 0;
 
-  bool get hasDiscount =>
-      compareAtPrice != null && compareAtPrice! > price;
+  bool get hasDiscount => compareAtPrice != null && compareAtPrice! > price;
 
   double get discountPercentage {
     if (!hasDiscount) return 0;

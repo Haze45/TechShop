@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
+import '../../../wishlist/presentation/viewmodels/wishlist_state.dart';
+import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
 import '../viewmodels/product_state.dart';
@@ -35,21 +37,16 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   void _onSearchChanged(String query) {
     _debounce?.cancel();
 
-    _debounce = Timer(
-      const Duration(milliseconds: 500),
-          () {
-        _search(query);
-      },
-    );
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _search(query);
+    });
   }
 
   Future<void> _clearSearch() async {
     _debounce?.cancel();
     _searchController.clear();
 
-    await ref
-        .read(productViewModelProvider.notifier)
-        .clearFilters();
+    await ref.read(productViewModelProvider.notifier).clearFilters();
   }
 
   Future<void> _refresh() async {
@@ -61,6 +58,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     final productAsync = ref.watch(productViewModelProvider);
     final cartAsync = ref.watch(cartViewModelProvider);
     final cartItemCount = cartAsync.value?.totalItems ?? 0;
+    final wishlistAsync = ref.watch(wishlistViewModelProvider);
+    final wishlistState = wishlistAsync.value;
+    final wishlistItemCount = wishlistState?.totalItems ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -82,11 +82,18 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             icon: Badge(
               isLabelVisible: cartItemCount > 0,
               label: Text('$cartItemCount'),
-              child: const Icon(
-                Icons.shopping_cart_outlined,
-              ),
+              child: const Icon(Icons.shopping_cart_outlined),
             ),
             tooltip: 'My Cart',
+          ),
+          IconButton(
+            onPressed: () => context.push('/wishlist'),
+            tooltip: 'My Wishlist',
+            icon: Badge(
+              isLabelVisible: wishlistItemCount > 0,
+              label: Text('$wishlistItemCount'),
+              child: const Icon(Icons.favorite_border),
+            ),
           ),
         ],
       ),
@@ -124,13 +131,16 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         ),
 
         data: (productState) {
-          return _buildProductContent(productState);
+          return _buildProductContent(productState, wishlistState);
         },
       ),
     );
   }
 
-  Widget _buildProductContent(ProductState productState) {
+  Widget _buildProductContent(
+    ProductState productState,
+    WishlistState? wishlistState,
+  ) {
     return RefreshIndicator(
       onRefresh: _refresh,
       child: CustomScrollView(
@@ -167,14 +177,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           SliverToBoxAdapter(child: _buildCategories(productState)),
 
           // Brand Filters
-          SliverToBoxAdapter(
-            child: _buildBrandFilters(productState),
-          ),
+          SliverToBoxAdapter(child: _buildBrandFilters(productState)),
 
           // Product Sorting
-          SliverToBoxAdapter(
-            child: _buildSortDropdown(productState),
-          ),
+          SliverToBoxAdapter(child: _buildSortDropdown(productState)),
 
           // Featured products
           if (productState.searchQuery.isEmpty &&
@@ -182,7 +188,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               productState.selectedBrandId == null &&
               productState.featuredProducts.isNotEmpty)
             SliverToBoxAdapter(
-              child: _buildFeaturedProducts(productState.featuredProducts),
+              child: _buildFeaturedProducts(
+                productState.featuredProducts,
+                wishlistState,
+              ),
             ),
 
           // Product section heading
@@ -227,8 +236,55 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
                   return ProductCard(
                     product: product,
+
+                    isWishlisted:
+                        wishlistState?.containsProduct(product.id) ?? false,
+
                     onTap: () {
                       context.push('/product/${product.id}');
+                    },
+
+                    onWishlistTap: () async {
+                      try {
+                        final isAlreadyWishlisted =
+                            ref
+                                .read(wishlistViewModelProvider)
+                                .value
+                                ?.containsProduct(product.id) ??
+                            false;
+
+                        if (isAlreadyWishlisted) {
+                          await ref
+                              .read(wishlistViewModelProvider.notifier)
+                              .removeFromWishlist(product.id);
+                        } else {
+                          await ref
+                              .read(wishlistViewModelProvider.notifier)
+                              .addToWishlist(product.id);
+                        }
+
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isAlreadyWishlisted
+                                  ? 'Removed from wishlist'
+                                  : 'Added to wishlist',
+                            ),
+                          ),
+                        );
+                      } catch (error) {
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please log in to manage your wishlist.',
+                            ),
+                          ),
+                        );
+                      }
                     },
                   );
                 }, childCount: productState.products.length),
@@ -328,9 +384,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             label: const Text('All Brands'),
             selected: state.selectedBrandId == null,
             onSelected: (_) {
-              ref
-                  .read(productViewModelProvider.notifier)
-                  .filterByBrand(null);
+              ref.read(productViewModelProvider.notifier).filterByBrand(null);
             },
           ),
 
@@ -357,7 +411,10 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     );
   }
 
-  Widget _buildFeaturedProducts(List<ProductEntity> products) {
+  Widget _buildFeaturedProducts(
+    List<ProductEntity> products,
+    WishlistState? wishlistState,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -383,8 +440,58 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: ProductCard(
                     product: products[index],
+
+                    isWishlisted:
+                        wishlistState?.containsProduct(products[index].id) ??
+                        false,
+
                     onTap: () {
                       context.push('/product/${products[index].id}');
+                    },
+
+                    onWishlistTap: () async {
+                      final productId = products[index].id;
+
+                      try {
+                        final isAlreadyWishlisted =
+                            ref
+                                .read(wishlistViewModelProvider)
+                                .value
+                                ?.containsProduct(productId) ??
+                            false;
+
+                        if (isAlreadyWishlisted) {
+                          await ref
+                              .read(wishlistViewModelProvider.notifier)
+                              .removeFromWishlist(productId);
+                        } else {
+                          await ref
+                              .read(wishlistViewModelProvider.notifier)
+                              .addToWishlist(productId);
+                        }
+
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isAlreadyWishlisted
+                                  ? 'Removed from wishlist'
+                                  : 'Added to wishlist',
+                            ),
+                          ),
+                        );
+                      } catch (error) {
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please log in to manage your wishlist.',
+                            ),
+                          ),
+                        );
+                      }
                     },
                   ),
                 ),
@@ -398,19 +505,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Widget _buildSortDropdown(ProductState state) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          const Text(
-            'Sort by:',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          const Text('Sort by:', style: TextStyle(fontWeight: FontWeight.w600)),
 
           const SizedBox(width: 12),
 

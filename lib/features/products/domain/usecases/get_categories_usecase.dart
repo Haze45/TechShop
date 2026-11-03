@@ -1,4 +1,3 @@
-
 import '../repositories/product_repository.dart';
 
 class GetCategoriesUseCase {

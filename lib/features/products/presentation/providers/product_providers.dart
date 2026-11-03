@@ -83,11 +83,11 @@ final getBrandsUseCaseProvider = Provider<GetBrandsUseCase>((ref) {
 
 // Product ViewModel Provider
 final productViewModelProvider =
-AsyncNotifierProvider<ProductViewModel, ProductState>(
-  ProductViewModel.new,
-);
+    AsyncNotifierProvider<ProductViewModel, ProductState>(ProductViewModel.new);
 
-final productDetailsProvider =
-FutureProvider.family<ProductEntity?, String>((ref, productId) {
+final productDetailsProvider = FutureProvider.family<ProductEntity?, String>((
+  ref,
+  productId,
+) {
   return ref.watch(getProductDetailsUseCaseProvider)(productId);
 });

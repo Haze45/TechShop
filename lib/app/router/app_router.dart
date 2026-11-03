@@ -13,6 +13,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 
 import '../../features/products/presentation/screens/product_details_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
+import '../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import 'auth_refresh_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -88,6 +89,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/cart',
         builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        path: '/wishlist',
+        builder: (context, state) => const WishlistScreen(),
       ),
     ],
   );

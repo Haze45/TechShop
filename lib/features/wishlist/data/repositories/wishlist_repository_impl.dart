@@ -1,4 +1,3 @@
-
 import '../../domain/entities/wishlist_entity.dart';
 import '../../domain/repositories/wishlist_repository.dart';
 import '../datasources/wishlist_remote_datasource.dart';
@@ -23,8 +22,7 @@ class WishlistRepositoryImpl implements WishlistRepository {
     required String userId,
     required String productId,
   }) async {
-    final wishlistId =
-    await remoteDataSource.getOrCreateWishlist(userId);
+    final wishlistId = await remoteDataSource.getOrCreateWishlist(userId);
 
     await remoteDataSource.addToWishlist(
       wishlistId: wishlistId,
@@ -37,8 +35,7 @@ class WishlistRepositoryImpl implements WishlistRepository {
     required String userId,
     required String productId,
   }) async {
-    final wishlistId =
-    await remoteDataSource.getOrCreateWishlist(userId);
+    final wishlistId = await remoteDataSource.getOrCreateWishlist(userId);
 
     await remoteDataSource.removeFromWishlist(
       wishlistId: wishlistId,
@@ -48,8 +45,7 @@ class WishlistRepositoryImpl implements WishlistRepository {
 
   @override
   Future<void> clearWishlist(String userId) async {
-    final wishlistId =
-    await remoteDataSource.getOrCreateWishlist(userId);
+    final wishlistId = await remoteDataSource.getOrCreateWishlist(userId);
 
     await remoteDataSource.clearWishlist(wishlistId);
   }

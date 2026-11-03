@@ -5,10 +5,7 @@ class AddToWishlistUseCase {
 
   AddToWishlistUseCase(this.repository);
 
-  Future<void> call({
-    required String userId,
-    required String productId,
-  }) async {
+  Future<void> call({required String userId, required String productId}) async {
     if (userId.isEmpty) {
       throw ArgumentError('User ID cannot be empty.');
     }
@@ -17,9 +14,6 @@ class AddToWishlistUseCase {
       throw ArgumentError('Product ID cannot be empty.');
     }
 
-    await repository.addToWishlist(
-      userId: userId,
-      productId: productId,
-    );
+    await repository.addToWishlist(userId: userId, productId: productId);
   }
 }

@@ -16,10 +16,8 @@ class WishlistModel extends WishlistEntity {
       userId: json['user_id'].toString(),
       items: (json['wishlist_items'] as List<dynamic>? ?? [])
           .map(
-            (item) => WishlistItemModel.fromJson(
-          item as Map<String, dynamic>,
-        ),
-      )
+            (item) => WishlistItemModel.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),

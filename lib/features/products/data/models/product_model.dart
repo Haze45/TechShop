@@ -1,4 +1,3 @@
-
 import '../../domain/entities/product_entity.dart';
 import 'product_image_model.dart';
 
@@ -38,14 +37,11 @@ class ProductModel extends ProductEntity {
 
       price: (json['price'] as num).toDouble(),
 
-      compareAtPrice:
-      (json['compare_at_price'] as num?)?.toDouble(),
+      compareAtPrice: (json['compare_at_price'] as num?)?.toDouble(),
 
-      stockQuantity:
-      (json['stock_quantity'] as num?)?.toInt() ?? 0,
+      stockQuantity: (json['stock_quantity'] as num?)?.toInt() ?? 0,
 
-      specifications:
-      Map<String, dynamic>.from(
+      specifications: Map<String, dynamic>.from(
         json['specifications'] as Map? ?? {},
       ),
 
@@ -58,9 +54,9 @@ class ProductModel extends ProductEntity {
       images: imageList
           .map(
             (image) => ProductImageModel.fromJson(
-          Map<String, dynamic>.from(image as Map),
-        ),
-      )
+              Map<String, dynamic>.from(image as Map),
+            ),
+          )
           .toList(),
     );
   }
@@ -83,14 +79,16 @@ class ProductModel extends ProductEntity {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'product_images': images
-          .map((image) => ProductImageModel(
-        id: image.id,
-        productId: image.productId,
-        imageUrl: image.imageUrl,
-        altText: image.altText,
-        displayOrder: image.displayOrder,
-        isPrimary: image.isPrimary,
-      ).toJson())
+          .map(
+            (image) => ProductImageModel(
+              id: image.id,
+              productId: image.productId,
+              imageUrl: image.imageUrl,
+              altText: image.altText,
+              displayOrder: image.displayOrder,
+              isPrimary: image.isPrimary,
+            ).toJson(),
+          )
           .toList(),
     };
   }
