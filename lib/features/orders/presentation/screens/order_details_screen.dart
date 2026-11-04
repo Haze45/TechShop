@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/order_entity.dart';
+import '../../domain/entities/order_item_entity.dart';
 import '../viewmodels/order_viewmodel.dart';
+import '../widgets/order_status_timeline.dart';
 
 class OrderDetailsScreen extends ConsumerWidget {
   final String orderId;
@@ -43,70 +45,81 @@ class OrderDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildOrderDetails(BuildContext context,WidgetRef ref, OrderEntity order) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildOrderHeader(context, order),
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(orderDetailsProvider(orderId));
 
-          const SizedBox(height: 24),
-
-          _buildOrderStatus(order),
-
-          const SizedBox(height: 24),
-
-          _buildSectionTitle(context, 'Ordered Products'),
-
-          const SizedBox(height: 12),
-
-          ...order.items.map((item) => _buildOrderItem(context, item)),
-
-          const SizedBox(height: 24),
-
-          _buildSectionTitle(context, 'Delivery Address'),
-
-          const SizedBox(height: 12),
-
-          _buildShippingAddress(order),
-
-          const SizedBox(height: 24),
-
-          _buildSectionTitle(context, 'Price Details'),
-
-          const SizedBox(height: 12),
-
-          _buildPriceDetails(context, order),
-
-          const SizedBox(height: 24),
-
-          _buildPaymentDetails(order),
-
-          // Cancel Order Button
-          if (_canCancelOrder(order)) ...[
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  _confirmCancellation(
-                    context,
-                    // Pass WidgetRef from build method (see below).
-                    ref,
-                    order.id,
-                  );
-                },
-                icon: const Icon(Icons.cancel_outlined),
-                label: const Text('Cancel Order'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  side: const BorderSide(color: Colors.red),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+        try {
+          await ref.read(orderDetailsProvider(orderId).future);
+        } catch (error) {
+          debugPrint('Unable to refresh order: $error');
+        }
+      },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildOrderHeader(context, order),
+      
+            const SizedBox(height: 24),
+      
+            _buildOrderStatus(context,order),
+      
+            const SizedBox(height: 24),
+      
+            _buildSectionTitle(context, 'Ordered Products'),
+      
+            const SizedBox(height: 12),
+      
+            ...order.items.map((item) => _buildOrderItem(context, item)),
+      
+            const SizedBox(height: 24),
+      
+            _buildSectionTitle(context, 'Delivery Address'),
+      
+            const SizedBox(height: 12),
+      
+            _buildShippingAddress(order),
+      
+            const SizedBox(height: 24),
+      
+            _buildSectionTitle(context, 'Price Details'),
+      
+            const SizedBox(height: 12),
+      
+            _buildPriceDetails(context, order),
+      
+            const SizedBox(height: 24),
+      
+            _buildPaymentDetails(context,order),
+      
+            // Cancel Order Button
+            if (_canCancelOrder(order)) ...[
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    _confirmCancellation(
+                      context,
+                      // Pass WidgetRef from build method (see below).
+                      ref,
+                      order.id,
+                    );
+                  },
+                  icon: const Icon(Icons.cancel_outlined),
+                  label: const Text('Cancel Order'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -143,152 +156,67 @@ class OrderDetailsScreen extends ConsumerWidget {
   // ORDER STATUS
   // =========================================
 
-  Widget _buildOrderStatus(OrderEntity order) {
-    const steps = [
-      'pending',
-      'confirmed',
-      'processing',
-      'shipped',
-      'delivered',
-    ];
 
-    final currentIndex = steps.indexOf(order.status);
-
+  Widget _buildOrderStatus(BuildContext context,OrderEntity order) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Order Tracking',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 16),
-
-            if (order.isCancelled) ...[
-              const Row(
-                children: [
-                  Icon(Icons.cancel, color: Colors.red, size: 25),
-                  SizedBox(width: 10),
-                  Text(
-                    'Order Cancelled',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-            ] else if (currentIndex == -1) ...[
-              Text('Unknown order status: ${order.status}'),
-            ] else ...[
-              ...steps.asMap().entries.map((entry) {
-                final index = entry.key;
-                final step = entry.value;
-
-                final isCompleted = index <= currentIndex;
-                final isCurrent = index == currentIndex;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 18),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        children: [
-                          Icon(
-                            isCompleted
-                                ? Icons.check_circle
-                                : Icons.radio_button_unchecked,
-                            color: isCompleted ? Colors.green : Colors.grey,
-                            size: 24,
-                          ),
-                          if (index != steps.length - 1)
-                            Container(
-                              width: 2,
-                              height: 25,
-                              color: isCompleted
-                                  ? Colors.green
-                                  : Colors.grey.shade300,
-                            ),
-                        ],
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 3),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _capitalize(step),
-                                style: TextStyle(
-                                  fontWeight: isCurrent
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: isCompleted
-                                      ? Colors.green.shade800
-                                      : Colors.grey,
-                                ),
-                              ),
-
-                              if (isCurrent)
-                                const Text(
-                                  'Current Order Status',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ],
+            ),
+            const SizedBox(height: 20),
+            OrderStatusTimeline(
+              status: order.status,
+            ),
           ],
         ),
       ),
     );
   }
 
+
   // =========================================
   // ORDER ITEM
   // =========================================
 
-  Widget _buildOrderItem(BuildContext context, dynamic item) {
+
+  Widget _buildOrderItem(BuildContext context, OrderItemEntity item) {
+    final theme = Theme.of(context);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                width: 85,
-                height: 85,
-                child:
-                    item.productImageUrl != null &&
-                        item.productImageUrl!.isNotEmpty
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: 90,
+                height: 90,
+                color: theme.colorScheme.surfaceContainerHighest,
+                child: item.productImageUrl != null &&
+                    item.productImageUrl!.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: item.productImageUrl!,
-                        fit: BoxFit.contain,
-                        errorWidget: (_, _, _) =>
-                            const Icon(Icons.image_not_supported_outlined),
-                      )
+                  imageUrl: item.productImageUrl!,
+                  fit: BoxFit.contain,
+                  errorWidget: (_, _, _) => const Icon(
+                    Icons.image_not_supported_outlined,
+                    size: 35,
+                  ),
+                )
                     : const Icon(Icons.image_outlined, size: 35),
               ),
             ),
 
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
 
             Expanded(
               child: Column(
@@ -298,17 +226,40 @@ class OrderDetailsScreen extends ConsumerWidget {
                     item.productName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+
                   const SizedBox(height: 6),
-                  Text('SKU: ${item.productSku}'),
-                  Text('Quantity: ${item.quantity}'),
-                  const SizedBox(height: 6),
+
                   Text(
-                    '₹${item.unitPrice.toStringAsFixed(2)}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    'SKU: ${item.productSku}',
+                    style: theme.textTheme.bodySmall,
                   ),
-                  Text('Subtotal: ₹${item.lineTotal.toStringAsFixed(2)}'),
+
+                  const SizedBox(height: 8),
+
+                  Text('Quantity: ${item.quantity}'),
+
+                  const SizedBox(height: 8),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '₹${item.unitPrice.toStringAsFixed(2)} each',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      Text(
+                        '₹${item.lineTotal.toStringAsFixed(2)}',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -318,20 +269,32 @@ class OrderDetailsScreen extends ConsumerWidget {
     );
   }
 
+
   // =========================================
   // SHIPPING ADDRESS
   // =========================================
 
+
   Widget _buildShippingAddress(OrderEntity order) {
     final address = order.shippingAddress;
 
-    final name = address['full_name'] ?? '';
-    final phone = address['phone'] ?? '';
-    final street = address['address'] ?? '';
-    final landmark = address['landmark'] ?? '';
-    final city = address['city'] ?? '';
-    final state = address['state'] ?? '';
-    final postalCode = address['postal_code'] ?? '';
+    String getValue(String key) {
+      return (address[key] ?? '').toString().trim();
+    }
+
+    final name = getValue('full_name');
+    final phone = getValue('phone');
+    final street = getValue('address');
+    final landmark = getValue('landmark');
+    final city = getValue('city');
+    final state = getValue('state');
+    final postalCode = getValue('postal_code');
+
+    final location = [
+      city,
+      state,
+      postalCode,
+    ].where((value) => value.isNotEmpty).join(', ');
 
     return Card(
       child: Padding(
@@ -339,21 +302,64 @@ class OrderDetailsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              name.toString(),
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Icon(Icons.person_outline),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    name.isEmpty ? 'Customer' : name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(street.toString()),
-            if (landmark.toString().isNotEmpty) Text('Landmark: $landmark'),
-            Text('$city, $state - $postalCode'),
-            const SizedBox(height: 8),
-            Text('Phone: $phone'),
+
+            const SizedBox(height: 16),
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.location_on_outlined),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (street.isNotEmpty) Text(street),
+                      if (landmark.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Text('Landmark: $landmark'),
+                      ],
+                      if (location.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Text(location),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            if (phone.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.phone_outlined),
+                  const SizedBox(width: 10),
+                  Text(phone),
+                ],
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+
 
   // =========================================
   // PRICE DETAILS
@@ -405,17 +411,108 @@ class OrderDetailsScreen extends ConsumerWidget {
   // PAYMENT DETAILS
   // =========================================
 
-  Widget _buildPaymentDetails(OrderEntity order) {
+
+  Widget _buildPaymentDetails(BuildContext context,OrderEntity order) {
+    final theme = Theme.of(context);
+    final paymentStatus = order.paymentStatus.toLowerCase();
+
+    final isPaid = paymentStatus == 'paid';
+    final isFailed = paymentStatus == 'failed' ||
+        paymentStatus == 'refunded';
+
+    final statusColor = isPaid
+        ? Colors.green
+        : isFailed
+        ? Colors.red
+        : Colors.orange;
+
     return Card(
-      child: ListTile(
-        leading: const Icon(Icons.payment),
-        title: Text(
-          'Payment Method: ${order.paymentMethod?.toUpperCase() ?? 'N/A'}',
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Payment Information',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            Row(
+              children: [
+                const Icon(Icons.payment_outlined),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text('Payment Method'),
+                ),
+                Text(
+                  order.paymentMethod?.toUpperCase() ?? 'N/A',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                const Icon(Icons.verified_outlined),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text('Payment Status'),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _capitalize(paymentStatus),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            const Divider(),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Order Total',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '₹${order.totalAmount.toStringAsFixed(2)}',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        subtitle: Text('Payment Status: ${_capitalize(order.paymentStatus)}'),
       ),
     );
   }
+
 
   // =========================================
   // COMMON HELPERS
@@ -443,9 +540,13 @@ class OrderDetailsScreen extends ConsumerWidget {
   }
 
   bool _canCancelOrder(OrderEntity order) {
-    return (order.status == 'pending' || order.status == 'confirmed') &&
-        order.paymentMethod == 'cod' &&
-        (order.paymentStatus == 'pending' || order.paymentStatus == 'failed');
+    final status = order.status.toLowerCase();
+    final paymentStatus = order.paymentStatus.toLowerCase();
+    final paymentMethod = order.paymentMethod?.toLowerCase();
+
+    return (status == 'pending' || status == 'confirmed') &&
+        paymentMethod == 'cod' &&
+        (paymentStatus == 'pending' || paymentStatus == 'failed');
   }
 
   Future<void> _confirmCancellation(
