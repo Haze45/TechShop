@@ -56,12 +56,14 @@ class OrderRemoteDataSource {
   Future<String> createOrder({
     required Map<String, dynamic> shippingAddress,
     String? notes,
+    String paymentMethod = 'cod',
   }) async {
     final response = await supabase.rpc(
       'create_order',
       params: {
         'p_shipping_address': shippingAddress,
         'p_notes': notes,
+        'p_payment_method': paymentMethod,
       },
     );
 

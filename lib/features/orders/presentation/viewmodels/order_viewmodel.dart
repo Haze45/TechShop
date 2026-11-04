@@ -101,6 +101,7 @@ class OrderViewModel extends AsyncNotifier<OrderState> {
   Future<String> createOrder({
     required Map<String, dynamic> shippingAddress,
     String? notes,
+    String paymentMethod = 'cod',
   }) async {
     final authState = ref.read(authViewModelProvider);
     final user = authState.value;
@@ -115,16 +116,17 @@ class OrderViewModel extends AsyncNotifier<OrderState> {
       throw Exception('An order is already being submitted.');
     }
 
-    // Show submitting state.
     state = AsyncData(currentState.copyWith(isSubmitting: true));
 
     try {
-      // Call CreateOrderUseCase.
       final orderId = await ref
           .read(createOrderUseCaseProvider)
-          .call(shippingAddress: shippingAddress, notes: notes);
+          .call(
+            shippingAddress: shippingAddress,
+            notes: notes,
+            paymentMethod: paymentMethod,
+          );
 
-      // Refresh order history after successful creation.
       try {
         final orders = await ref.read(getOrdersUseCaseProvider).call(user.id);
 
@@ -147,9 +149,7 @@ class OrderViewModel extends AsyncNotifier<OrderState> {
       throw Exception('Another order operation is in progress.');
     }
 
-    state = AsyncData(
-      currentState.copyWith(isRefreshing: true),
-    );
+    state = AsyncData(currentState.copyWith(isRefreshing: true));
 
     try {
       // Execute the cancellation
@@ -162,19 +162,13 @@ class OrderViewModel extends AsyncNotifier<OrderState> {
       if (user != null) {
         final orders = await ref.read(getOrdersUseCaseProvider).call(user.id);
 
-        state = AsyncData(
-          OrderState(orders: orders),
-        );
+        state = AsyncData(OrderState(orders: orders));
       } else {
-        state = AsyncData(
-          currentState.copyWith(isRefreshing: false),
-        );
+        state = AsyncData(currentState.copyWith(isRefreshing: false));
       }
     } catch (error) {
       // Preserve the existing order list if an operation fails
-      state = AsyncData(
-        currentState.copyWith(isRefreshing: false),
-      );
+      state = AsyncData(currentState.copyWith(isRefreshing: false));
 
       rethrow;
     }

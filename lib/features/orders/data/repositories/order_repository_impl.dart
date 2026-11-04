@@ -27,10 +27,12 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<String> createOrder({
     required Map<String, dynamic> shippingAddress,
     String? notes,
+    String paymentMethod = 'cod',
   }) async {
     return remoteDataSource.createOrder(
       shippingAddress: shippingAddress,
       notes: notes,
+      paymentMethod: paymentMethod,
     );
   }
 

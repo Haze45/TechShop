@@ -11,6 +11,7 @@ abstract class OrderRepository {
   Future<String> createOrder({
     required Map<String, dynamic> shippingAddress,
     String? notes,
+    String paymentMethod = 'cod',
   });
 
   Future<void> cancelOrder(String orderId);
