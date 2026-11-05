@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/admin/presentation/screens/add_product_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/providers/admin_providers.dart';
 import '../../features/admin/presentation/screens/admin_products_screen.dart';
@@ -133,6 +134,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/products',
         builder: (context, state) => const AdminProductsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/products/add',
+        builder: (context, state) => const AddProductScreen(),
       ),
     ],
   );

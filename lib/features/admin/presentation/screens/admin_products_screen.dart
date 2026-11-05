@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/admin_product_providers.dart';
 import '../../../products/domain/entities/product_entity.dart';
@@ -29,6 +30,13 @@ class _AdminProductsScreenState extends ConsumerState<AdminProductsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Products')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          context.push('/admin/products/add');
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Add Product'),
+      ),
       body: productsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
