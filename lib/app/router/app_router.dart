@@ -1,8 +1,10 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/providers/admin_providers.dart';
+import '../../features/admin/presentation/screens/admin_products_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/profile_screen.dart';
@@ -22,10 +24,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation: '/home',
-
     refreshListenable: authRefreshNotifier,
 
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final session = Supabase.instance.client.auth.currentSession;
       final isLoggedIn = session != null;
       final location = state.matchedLocation;
@@ -36,27 +37,43 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/update-password';
       }
 
-      final isPublicRoute = location == '/login' ||
+      final isPublicRoute =
+          location == '/login' ||
           location == '/register' ||
           location == '/forgot-password';
 
+      // Prevent unauthenticated users from accessing private routes.
       if (!isLoggedIn && !isPublicRoute) {
         return '/login';
       }
 
-      if (isLoggedIn &&
-          (location == '/login' || location == '/register')) {
+      // Redirect logged-in users away from login and registration.
+      if (isLoggedIn && (location == '/login' || location == '/register')) {
         return '/home';
+      }
+
+      // Admin-only route protection.
+      final isAdminRoute =
+          location == '/admin' || location.startsWith('/admin/');
+
+      if (isLoggedIn && isAdminRoute) {
+        try {
+          final isAdmin = await ref.read(checkAdminRoleProvider).call();
+
+          if (!isAdmin) {
+            return '/home';
+          }
+        } catch (error) {
+          // Deny access if the admin check fails.
+          return '/home';
+        }
       }
 
       return null;
     },
 
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
@@ -82,15 +99,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final productId = state.pathParameters['productId']!;
 
-          return ProductDetailsScreen(
-            productId: productId,
-          );
+          return ProductDetailsScreen(productId: productId);
         },
       ),
-      GoRoute(
-        path: '/cart',
-        builder: (context, state) => const CartScreen(),
-      ),
+      GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(
         path: '/wishlist',
         builder: (context, state) => const WishlistScreen(),
@@ -110,6 +122,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
           return OrderDetailsScreen(orderId: orderId);
         },
+      ),
+
+      // Admin-only route.
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+
+      GoRoute(
+        path: '/admin/products',
+        builder: (context, state) => const AdminProductsScreen(),
       ),
     ],
   );
