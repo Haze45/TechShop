@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/services/device_token_service.dart';
 import '../../domain/entities/user_entity.dart';
 import '../providers/auth_providers.dart';
 
@@ -90,6 +92,13 @@ class AuthViewModel extends AsyncNotifier<UserEntity?> {
     state = const AsyncLoading();
 
     try {
+      try {
+        await DeviceTokenService.instance.removeCurrentDeviceToken();
+      } catch (error, stackTrace) {
+        debugPrint('FCM token removal failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
+
       await ref.read(signOutUseCaseProvider)();
 
       state = const AsyncData(null);
