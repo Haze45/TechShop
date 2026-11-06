@@ -4,10 +4,7 @@ class CartState {
   final CartEntity? cart;
   final bool isUpdating;
 
-  const CartState({
-    this.cart,
-    this.isUpdating = false,
-  });
+  const CartState({this.cart, this.isUpdating = false});
 
   int get totalItems => cart?.totalItems ?? 0;
 
@@ -17,10 +14,7 @@ class CartState {
 
   bool get isNotEmpty => !isEmpty;
 
-  CartState copyWith({
-    CartEntity? cart,
-    bool? isUpdating,
-  }) {
+  CartState copyWith({CartEntity? cart, bool? isUpdating}) {
     return CartState(
       cart: cart ?? this.cart,
       isUpdating: isUpdating ?? this.isUpdating,

@@ -45,14 +45,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     try {
-      await ref.read(authViewModelProvider.notifier).signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        fullName: _fullNameController.text.trim(),
-        phone: _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
-      );
+      await ref
+          .read(authViewModelProvider.notifier)
+          .signUp(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            fullName: _fullNameController.text.trim(),
+            phone: _phoneController.text.trim().isEmpty
+                ? null
+                : _phoneController.text.trim(),
+          );
 
       if (!mounted) return;
 
@@ -98,9 +100,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       labelText: label,
       prefixIcon: Icon(icon),
       suffixIcon: suffixIcon,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -121,10 +121,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Create Account'), centerTitle: true),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -146,9 +143,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Text(
                     'Join TechShop',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.headlineMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 8),
@@ -193,8 +189,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         return 'Please enter your email';
                       }
 
-                      final emailRegex =
-                      RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
                       if (!emailRegex.hasMatch(value.trim())) {
                         return 'Please enter a valid email address';
@@ -219,8 +214,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         return null;
                       }
 
-                      if (!RegExp(r'^[0-9]{10,15}$')
-                          .hasMatch(value.trim())) {
+                      if (!RegExp(r'^[0-9]{10,15}$').hasMatch(value.trim())) {
                         return 'Enter a valid phone number';
                       }
 
@@ -275,8 +269,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
-                            _obscureConfirmPassword =
-                            !_obscureConfirmPassword;
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
                           });
                         },
                         icon: Icon(
@@ -313,19 +306,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                       child: _isLoading
                           ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
-                      )
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text(
-                        'Create Account',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                              'Create Account',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
 

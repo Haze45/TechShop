@@ -7,9 +7,7 @@ class AdminDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-      ),
+      appBar: AppBar(title: const Text('Admin Dashboard')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -17,10 +15,7 @@ class AdminDashboardScreen extends StatelessWidget {
           children: [
             const Text(
               'Welcome to TechShop Admin Panel',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             Card(

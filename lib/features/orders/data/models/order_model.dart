@@ -37,18 +37,18 @@ class OrderModel extends OrderEntity {
       tax: (json['tax'] as num).toDouble(),
       discount: (json['discount'] as num).toDouble(),
       totalAmount: (json['total_amount'] as num).toDouble(),
-      shippingAddress:
-      Map<String, dynamic>.from(json['shipping_address'] as Map),
+      shippingAddress: Map<String, dynamic>.from(
+        json['shipping_address'] as Map,
+      ),
       notes: json['notes'] as String?,
       placedAt: DateTime.parse(json['placed_at'].toString()),
       createdAt: DateTime.parse(json['created_at'].toString()),
       updatedAt: DateTime.parse(json['updated_at'].toString()),
       items: orderItems
           .map(
-            (item) => OrderItemModel.fromJson(
-          Map<String, dynamic>.from(item as Map),
-        ),
-      )
+            (item) =>
+                OrderItemModel.fromJson(Map<String, dynamic>.from(item as Map)),
+          )
           .toList(),
     );
   }

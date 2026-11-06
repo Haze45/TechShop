@@ -45,8 +45,7 @@ class OrderEntity {
     this.items = const [],
   });
 
-  int get totalItems =>
-      items.fold(0, (total, item) => total + item.quantity);
+  int get totalItems => items.fold(0, (total, item) => total + item.quantity);
 
   bool get isPending => status == 'pending';
 

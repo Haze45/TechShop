@@ -23,15 +23,15 @@ final paymentRepositoryProvider = Provider<PaymentRepository>((ref) {
   return PaymentRepositoryImpl(remoteDataSource);
 });
 
-final createRazorpayOrderUseCaseProvider =
-Provider<CreateRazorpayOrderUseCase>((ref) {
-  final repository = ref.watch(paymentRepositoryProvider);
+final createRazorpayOrderUseCaseProvider = Provider<CreateRazorpayOrderUseCase>(
+  (ref) {
+    final repository = ref.watch(paymentRepositoryProvider);
 
-  return CreateRazorpayOrderUseCase(repository);
-});
+    return CreateRazorpayOrderUseCase(repository);
+  },
+);
 
-final verifyPaymentUseCaseProvider =
-Provider<VerifyPaymentUseCase>((ref) {
+final verifyPaymentUseCaseProvider = Provider<VerifyPaymentUseCase>((ref) {
   final repository = ref.watch(paymentRepositoryProvider);
 
   return VerifyPaymentUseCase(repository);

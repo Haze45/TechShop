@@ -28,7 +28,6 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final theme = Theme.of(context);
 
     return Card(
@@ -37,9 +36,7 @@ class ProductCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: theme.dividerColor.withValues(alpha: 0.2),
-        ),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.2)),
       ),
 
       child: InkWell(
@@ -51,12 +48,10 @@ class ProductCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               // Product Image and Wishlist
               Expanded(
                 child: Stack(
                   children: [
-
                     Positioned.fill(
                       child: CachedNetworkImage(
                         imageUrl: imageUrl,
@@ -85,9 +80,7 @@ class ProductCard extends StatelessWidget {
                         onPressed: onWishlistTap,
 
                         icon: Icon(
-                          isWishlisted
-                              ? Icons.favorite
-                              : Icons.favorite_border,
+                          isWishlisted ? Icons.favorite : Icons.favorite_border,
                           color: isWishlisted
                               ? Colors.red
                               : theme.colorScheme.onSurface,
@@ -125,11 +118,7 @@ class ProductCard extends StatelessWidget {
               // Rating
               Row(
                 children: [
-                  const Icon(
-                    Icons.star,
-                    size: 15,
-                    color: Colors.amber,
-                  ),
+                  const Icon(Icons.star, size: 15, color: Colors.amber),
 
                   const SizedBox(width: 4),
 
@@ -145,7 +134,6 @@ class ProductCard extends StatelessWidget {
               // Price
               Row(
                 children: [
-
                   Flexible(
                     child: Text(
                       '₹${price.toStringAsFixed(0)}',

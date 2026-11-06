@@ -89,14 +89,10 @@ final watchAuthStateUseCaseProvider = Provider<WatchAuthStateUseCase>((ref) {
 // AUTH VIEWMODEL PROVIDER
 // =========================================
 
-final authViewModelProvider =
-AsyncNotifierProvider<AuthViewModel, UserEntity?>(
+final authViewModelProvider = AsyncNotifierProvider<AuthViewModel, UserEntity?>(
   AuthViewModel.new,
 );
 
-final updatePasswordUseCaseProvider =
-Provider<UpdatePasswordUseCase>((ref) {
-  return UpdatePasswordUseCase(
-    ref.watch(authRepositoryProvider),
-  );
+final updatePasswordUseCaseProvider = Provider<UpdatePasswordUseCase>((ref) {
+  return UpdatePasswordUseCase(ref.watch(authRepositoryProvider));
 });

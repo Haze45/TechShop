@@ -10,28 +10,19 @@ abstract class AuthRepository {
   });
 
   // Login
-  Future<UserEntity> signIn({
-    required String email,
-    required String password,
-  });
+  Future<UserEntity> signIn({required String email, required String password});
 
   // Logout
   Future<void> signOut();
 
   // Password reset
-  Future<void> resetPassword({
-    required String email,
-    String? redirectTo,
-  });
+  Future<void> resetPassword({required String email, String? redirectTo});
 
   // Current user
   UserEntity? getCurrentUser();
 
-  Future<void> updatePassword({
-    required String newPassword,
-  });
+  Future<void> updatePassword({required String newPassword});
 
   // Authentication state
   Stream<UserEntity?> get authStateChanges;
-
 }

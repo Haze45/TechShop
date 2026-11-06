@@ -304,12 +304,12 @@ class CartScreen extends ConsumerWidget {
             height: 50,
             child: ElevatedButton(
               onPressed:
-              cartState.isUpdating ||
-                  cartState.cart!.items.any((item) => !item.isInStock)
+                  cartState.isUpdating ||
+                      cartState.cart!.items.any((item) => !item.isInStock)
                   ? null
                   : () {
-                context.push('/checkout');
-              },
+                      context.push('/checkout');
+                    },
               child: const Text(
                 'Proceed to Checkout',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -385,9 +385,7 @@ class CartScreen extends ConsumerWidget {
 
                 _runCartAction(
                   context,
-                      () => ref
-                      .read(cartViewModelProvider.notifier)
-                      .clearCart(),
+                  () => ref.read(cartViewModelProvider.notifier).clearCart(),
                 );
               },
               child: const Text('Clear', style: TextStyle(color: Colors.red)),

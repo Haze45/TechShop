@@ -71,10 +71,7 @@ class AuthRemoteDataSource {
     required String email,
     String? redirectTo,
   }) async {
-    await supabase.auth.resetPasswordForEmail(
-      email,
-      redirectTo: redirectTo,
-    );
+    await supabase.auth.resetPasswordForEmail(email, redirectTo: redirectTo);
   }
 
   // =========================================
@@ -89,14 +86,8 @@ class AuthRemoteDataSource {
     return UserModel.fromSupabaseUser(user);
   }
 
-  Future<void> updatePassword({
-    required String newPassword,
-  }) async {
-    await supabase.auth.updateUser(
-      UserAttributes(
-        password: newPassword,
-      ),
-    );
+  Future<void> updatePassword({required String newPassword}) async {
+    await supabase.auth.updateUser(UserAttributes(password: newPassword));
   }
 
   // =========================================

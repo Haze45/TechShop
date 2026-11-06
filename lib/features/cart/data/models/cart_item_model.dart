@@ -20,9 +20,7 @@ class CartItemModel extends CartItemEntity {
       quantity: (json['quantity'] as num).toInt(),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      product: ProductModel.fromJson(
-        json['products'] as Map<String, dynamic>,
-      ),
+      product: ProductModel.fromJson(json['products'] as Map<String, dynamic>),
     );
   }
 

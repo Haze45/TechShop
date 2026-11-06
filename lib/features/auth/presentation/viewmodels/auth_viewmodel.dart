@@ -16,9 +16,10 @@ class AuthViewModel extends AsyncNotifier<UserEntity?> {
     final currentUser = ref.read(getCurrentUserUseCaseProvider)();
 
     // Listen for authentication changes.
-    _authSubscription =
-        ref.read(watchAuthStateUseCaseProvider)().listen(
-              (user) {
+    _authSubscription = ref
+        .read(watchAuthStateUseCaseProvider)()
+        .listen(
+          (user) {
             state = AsyncData(user);
           },
           onError: (Object error, StackTrace stackTrace) {
@@ -127,13 +128,9 @@ class AuthViewModel extends AsyncNotifier<UserEntity?> {
     }
   }
 
-  Future<void> updatePassword({
-    required String newPassword,
-  }) async {
+  Future<void> updatePassword({required String newPassword}) async {
     try {
-      await ref.read(updatePasswordUseCaseProvider)(
-        newPassword: newPassword,
-      );
+      await ref.read(updatePasswordUseCaseProvider)(newPassword: newPassword);
     } catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
       rethrow;

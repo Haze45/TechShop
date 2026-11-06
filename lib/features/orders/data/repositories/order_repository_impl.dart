@@ -17,10 +17,7 @@ class OrderRepositoryImpl implements OrderRepository {
     required String orderId,
     required String userId,
   }) async {
-    return remoteDataSource.getOrderById(
-      orderId: orderId,
-      userId: userId,
-    );
+    return remoteDataSource.getOrderById(orderId: orderId, userId: userId);
   }
 
   @override

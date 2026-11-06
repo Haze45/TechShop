@@ -17,9 +17,7 @@ class CartModel extends CartEntity {
       id: json['id'] as String,
       userId: json['user_id'] as String,
       items: itemsJson.map((item) {
-        return CartItemModel.fromJson(
-          item as Map<String, dynamic>,
-        );
+        return CartItemModel.fromJson(item as Map<String, dynamic>);
       }).toList(),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),

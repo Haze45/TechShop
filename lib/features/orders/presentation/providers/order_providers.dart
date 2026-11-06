@@ -16,8 +16,7 @@ import '../../domain/usecases/get_order_by_id_usecase.dart';
 // REMOTE DATA SOURCE PROVIDER
 // =========================================
 
-final orderRemoteDataSourceProvider =
-Provider<OrderRemoteDataSource>((ref) {
+final orderRemoteDataSourceProvider = Provider<OrderRemoteDataSource>((ref) {
   final supabase = ref.watch(supabaseProvider);
 
   return OrderRemoteDataSource(supabase);
@@ -47,20 +46,17 @@ final getOrdersUseCaseProvider = Provider<GetOrdersUseCase>((ref) {
 // GET ORDER BY ID USE CASE PROVIDER
 // =========================================
 
-final getOrderByIdUseCaseProvider =
-Provider<GetOrderByIdUseCase>((ref) {
+final getOrderByIdUseCaseProvider = Provider<GetOrderByIdUseCase>((ref) {
   final repository = ref.watch(orderRepositoryProvider);
 
   return GetOrderByIdUseCase(repository);
-
 });
 
 // =========================================
 // CREATE ORDER USE CASE PROVIDER
 // =========================================
 
-final createOrderUseCaseProvider =
-Provider<CreateOrderUseCase>((ref) {
+final createOrderUseCaseProvider = Provider<CreateOrderUseCase>((ref) {
   final repository = ref.watch(orderRepositoryProvider);
 
   return CreateOrderUseCase(repository);

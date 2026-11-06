@@ -23,6 +23,5 @@ class CartItemEntity {
 
   bool get isInStock => product.stockQuantity >= quantity;
 
-  bool get canIncreaseQuantity =>
-      quantity < product.stockQuantity;
+  bool get canIncreaseQuantity => quantity < product.stockQuantity;
 }

@@ -50,8 +50,8 @@ class OrderRemoteDataSource {
   }
 
   // =========================================
-// CREATE ORDER
-// =========================================
+  // CREATE ORDER
+  // =========================================
 
   Future<String> createOrder({
     required Map<String, dynamic> shippingAddress,
@@ -71,11 +71,6 @@ class OrderRemoteDataSource {
   }
 
   Future<void> cancelOrder(String orderId) async {
-    await supabase.rpc(
-      'cancel_order',
-      params: {
-        'p_order_id': orderId,
-      },
-    );
+    await supabase.rpc('cancel_order', params: {'p_order_id': orderId});
   }
 }

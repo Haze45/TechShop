@@ -11,7 +11,6 @@ class DesignSystemPreview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final themeMode = ref.watch(themeModeProvider);
 
     final theme = Theme.of(context);
@@ -28,18 +27,11 @@ class DesignSystemPreview extends ConsumerWidget {
             icon: const Icon(Icons.palette_outlined),
             initialValue: themeMode,
             onSelected: (mode) {
-              ref.read(themeModeProvider.notifier)
-                  .setThemeMode(mode);
+              ref.read(themeModeProvider.notifier).setThemeMode(mode);
             },
             itemBuilder: (context) => const [
-              PopupMenuItem(
-                value: ThemeMode.light,
-                child: Text('Light Mode'),
-              ),
-              PopupMenuItem(
-                value: ThemeMode.dark,
-                child: Text('Dark Mode'),
-              ),
+              PopupMenuItem(value: ThemeMode.light, child: Text('Light Mode')),
+              PopupMenuItem(value: ThemeMode.dark, child: Text('Dark Mode')),
               PopupMenuItem(
                 value: ThemeMode.system,
                 child: Text('System Default'),
@@ -55,12 +47,8 @@ class DesignSystemPreview extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // Branding
-            Text(
-              'Welcome to TechShop',
-              style: theme.textTheme.headlineMedium,
-            ),
+            Text('Welcome to TechShop', style: theme.textTheme.headlineMedium),
 
             const SizedBox(height: 8),
 
@@ -72,37 +60,22 @@ class DesignSystemPreview extends ConsumerWidget {
             const SizedBox(height: 28),
 
             // Typography
-            Text(
-              'Typography',
-              style: theme.textTheme.titleLarge,
-            ),
+            Text('Typography', style: theme.textTheme.titleLarge),
 
             const SizedBox(height: 12),
 
-            Text(
-              'Heading Large',
-              style: theme.textTheme.headlineLarge,
-            ),
+            Text('Heading Large', style: theme.textTheme.headlineLarge),
 
-            Text(
-              'Body Medium',
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text('Body Medium', style: theme.textTheme.bodyMedium),
 
             const SizedBox(height: 28),
 
             // Buttons
-            Text(
-              'Buttons',
-              style: theme.textTheme.titleLarge,
-            ),
+            Text('Buttons', style: theme.textTheme.titleLarge),
 
             const SizedBox(height: 12),
 
-            AppButton(
-              text: 'Explore Products',
-              onPressed: () {},
-            ),
+            AppButton(text: 'Explore Products', onPressed: () {}),
 
             const SizedBox(height: 12),
 
@@ -116,10 +89,7 @@ class DesignSystemPreview extends ConsumerWidget {
             const SizedBox(height: 28),
 
             // Text Field
-            Text(
-              'Text Fields',
-              style: theme.textTheme.titleLarge,
-            ),
+            Text('Text Fields', style: theme.textTheme.titleLarge),
 
             const SizedBox(height: 12),
 
@@ -132,10 +102,7 @@ class DesignSystemPreview extends ConsumerWidget {
             const SizedBox(height: 28),
 
             // Product Cards
-            Text(
-              'Product Cards',
-              style: theme.textTheme.titleLarge,
-            ),
+            Text('Product Cards', style: theme.textTheme.titleLarge),
 
             const SizedBox(height: 12),
 
@@ -151,8 +118,7 @@ class DesignSystemPreview extends ConsumerWidget {
                 ProductCard(
                   name: 'iPhone 16 Pro',
                   brand: 'Apple',
-                  imageUrl:
-                  'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500',
+                  imageUrl: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500',
                   price: 119900,
                   oldPrice: 129900,
                   rating: 4.8,
@@ -163,8 +129,7 @@ class DesignSystemPreview extends ConsumerWidget {
                 ProductCard(
                   name: 'MacBook Air',
                   brand: 'Apple',
-                  imageUrl:
-                  'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500',
+                  imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500',
                   price: 99900,
                   oldPrice: 109900,
                   rating: 4.7,

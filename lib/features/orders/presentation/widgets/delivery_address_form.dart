@@ -25,10 +25,7 @@ class DeliveryAddressForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Delivery Address',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        Text('Delivery Address', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 16),
 
         _buildField(

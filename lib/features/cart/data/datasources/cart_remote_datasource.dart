@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../models/cart_model.dart';
 
 class CartRemoteDataSource {
@@ -21,9 +22,7 @@ class CartRemoteDataSource {
     // Create a new cart if one does not exist.
     final newCart = await supabase
         .from('carts')
-        .insert({
-      'user_id': userId,
-    })
+        .insert({'user_id': userId})
         .select('id')
         .single();
 
@@ -73,9 +72,9 @@ class CartRemoteDataSource {
       await supabase
           .from('cart_items')
           .update({
-        'quantity': currentQuantity + quantity,
-        'updated_at': DateTime.now().toIso8601String(),
-      })
+            'quantity': currentQuantity + quantity,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
           .eq('id', existingItem['id']);
     } else {
       await supabase.from('cart_items').insert({
@@ -97,23 +96,17 @@ class CartRemoteDataSource {
     await supabase
         .from('cart_items')
         .update({
-      'quantity': quantity,
-      'updated_at': DateTime.now().toIso8601String(),
-    })
+          'quantity': quantity,
+          'updated_at': DateTime.now().toIso8601String(),
+        })
         .eq('id', itemId);
   }
 
   Future<void> removeCartItem(String itemId) async {
-    await supabase
-        .from('cart_items')
-        .delete()
-        .eq('id', itemId);
+    await supabase.from('cart_items').delete().eq('id', itemId);
   }
 
   Future<void> clearCart(String cartId) async {
-    await supabase
-        .from('cart_items')
-        .delete()
-        .eq('cart_id', cartId);
+    await supabase.from('cart_items').delete().eq('cart_id', cartId);
   }
 }

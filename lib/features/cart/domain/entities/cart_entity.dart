@@ -17,18 +17,12 @@ class CartEntity {
 
   // Total number of individual products.
   int get totalItems {
-    return items.fold(
-      0,
-          (total, item) => total + item.quantity,
-    );
+    return items.fold(0, (total, item) => total + item.quantity);
   }
 
   // Total cart price.
   double get totalPrice {
-    return items.fold(
-      0,
-          (total, item) => total + item.subtotal,
-    );
+    return items.fold(0, (total, item) => total + item.subtotal);
   }
 
   bool get isEmpty => items.isEmpty;

@@ -211,6 +211,13 @@ class _AdminProductCard extends StatelessWidget {
                 ],
               ),
             ),
+            IconButton(
+              tooltip: 'Edit Product',
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () {
+                context.push('/admin/products/edit', extra: product);
+              },
+            ),
           ],
         ),
       ),

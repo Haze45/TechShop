@@ -24,13 +24,9 @@ class AppEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 72,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            Icon(icon, size: 72, color: Theme.of(context).colorScheme.primary),
 
-            const SizedBox(height: 20,),
+            const SizedBox(height: 20),
 
             Text(
               title,
@@ -38,7 +34,7 @@ class AppEmptyState extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
 
-            const SizedBox(height: 8,),
+            const SizedBox(height: 8),
 
             Text(
               description,
@@ -46,10 +42,10 @@ class AppEmptyState extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
 
-            if(buttonText != null) ...[
-              const SizedBox(height: 20,),
-              ElevatedButton(onPressed: onPressed, child: Text(buttonText!),)
-            ]
+            if (buttonText != null) ...[
+              const SizedBox(height: 20),
+              ElevatedButton(onPressed: onPressed, child: Text(buttonText!)),
+            ],
           ],
         ),
       ),

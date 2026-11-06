@@ -7,9 +7,7 @@ class DefaultFirebaseOptions {
       return android;
     }
 
-    throw UnsupportedError(
-      'Firebase is not configured for this platform.',
-    );
+    throw UnsupportedError('Firebase is not configured for this platform.');
   }
 
   static const FirebaseOptions android = FirebaseOptions(

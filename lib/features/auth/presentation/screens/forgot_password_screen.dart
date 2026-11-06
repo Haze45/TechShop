@@ -11,8 +11,7 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
       _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState
-    extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
@@ -31,10 +30,12 @@ class _ForgotPasswordScreenState
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authViewModelProvider.notifier).resetPassword(
-        email: _emailController.text.trim(),
-        redirectTo: 'com.example.tech_shop://reset-password/',
-      );
+      await ref
+          .read(authViewModelProvider.notifier)
+          .resetPassword(
+            email: _emailController.text.trim(),
+            redirectTo: 'com.example.tech_shop://reset-password/',
+          );
 
       if (!mounted) return;
 
@@ -44,9 +45,7 @@ class _ForgotPasswordScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Unable to send the reset email. Please try again.',
-          ),
+          content: Text('Unable to send the reset email. Please try again.'),
         ),
       );
     } finally {
@@ -59,10 +58,7 @@ class _ForgotPasswordScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forgot Password'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Forgot Password'), centerTitle: true),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -89,14 +85,13 @@ class _ForgotPasswordScreenState
           Text(
             'Forgot your password?',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Text(
             'Enter your registered email address. '
-                'We will send you instructions to reset your password.',
+            'We will send you instructions to reset your password.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
@@ -116,8 +111,7 @@ class _ForgotPasswordScreenState
                 return 'Please enter your email address';
               }
 
-              final emailRegex =
-              RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+              final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
               if (!emailRegex.hasMatch(value.trim())) {
                 return 'Please enter a valid email address';
@@ -133,14 +127,14 @@ class _ForgotPasswordScreenState
               onPressed: _isLoading ? null : _sendResetEmail,
               child: _isLoading
                   ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Text(
-                'Send Reset Link',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+                      'Send Reset Link',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
             ),
           ),
           const SizedBox(height: 16),
@@ -164,14 +158,13 @@ class _ForgotPasswordScreenState
         const SizedBox(height: 24),
         Text(
           'Check your email',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.headlineSmall
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         const Text(
           'If an account exists for this email address, '
-              'you will receive instructions to reset your password.',
+          'you will receive instructions to reset your password.',
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),

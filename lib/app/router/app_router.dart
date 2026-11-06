@@ -6,6 +6,7 @@ import '../../features/admin/presentation/screens/add_product_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/providers/admin_providers.dart';
 import '../../features/admin/presentation/screens/admin_products_screen.dart';
+import '../../features/admin/presentation/screens/edit_product_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/profile_screen.dart';
@@ -15,6 +16,7 @@ import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/orders/presentation/screens/checkout_screen.dart';
 import '../../features/orders/presentation/screens/order_details_screen.dart';
 import '../../features/orders/presentation/screens/order_history_screen.dart';
+import '../../features/products/domain/entities/product_entity.dart';
 import '../../features/products/presentation/screens/product_details_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
 import '../../features/wishlist/presentation/screens/wishlist_screen.dart';
@@ -138,6 +140,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/products/add',
         builder: (context, state) => const AddProductScreen(),
+      ),
+      GoRoute(
+        path: '/admin/products/edit',
+        builder: (context, state) {
+          final product = state.extra as ProductEntity;
+
+          return EditProductScreen(product: product);
+        },
       ),
     ],
   );

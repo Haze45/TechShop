@@ -38,13 +38,17 @@ class OrderDetailsScreen extends ConsumerWidget {
             return const Center(child: Text('Order not found.'));
           }
 
-          return _buildOrderDetails(context,ref, order);
+          return _buildOrderDetails(context, ref, order);
         },
       ),
     );
   }
 
-  Widget _buildOrderDetails(BuildContext context,WidgetRef ref, OrderEntity order) {
+  Widget _buildOrderDetails(
+    BuildContext context,
+    WidgetRef ref,
+    OrderEntity order,
+  ) {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(orderDetailsProvider(orderId));
@@ -61,39 +65,39 @@ class OrderDetailsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildOrderHeader(context, order),
-      
+
             const SizedBox(height: 24),
-      
-            _buildOrderStatus(context,order),
-      
+
+            _buildOrderStatus(context, order),
+
             const SizedBox(height: 24),
-      
+
             _buildSectionTitle(context, 'Ordered Products'),
-      
+
             const SizedBox(height: 12),
-      
+
             ...order.items.map((item) => _buildOrderItem(context, item)),
-      
+
             const SizedBox(height: 24),
-      
+
             _buildSectionTitle(context, 'Delivery Address'),
-      
+
             const SizedBox(height: 12),
-      
+
             _buildShippingAddress(order),
-      
+
             const SizedBox(height: 24),
-      
+
             _buildSectionTitle(context, 'Price Details'),
-      
+
             const SizedBox(height: 12),
-      
+
             _buildPriceDetails(context, order),
-      
+
             const SizedBox(height: 24),
-      
-            _buildPaymentDetails(context,order),
-      
+
+            _buildPaymentDetails(context, order),
+
             // Cancel Order Button
             if (_canCancelOrder(order)) ...[
               const SizedBox(height: 20),
@@ -156,8 +160,7 @@ class OrderDetailsScreen extends ConsumerWidget {
   // ORDER STATUS
   // =========================================
 
-
-  Widget _buildOrderStatus(BuildContext context,OrderEntity order) {
+  Widget _buildOrderStatus(BuildContext context, OrderEntity order) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -166,25 +169,20 @@ class OrderDetailsScreen extends ConsumerWidget {
           children: [
             Text(
               'Order Tracking',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            OrderStatusTimeline(
-              status: order.status,
-            ),
+            OrderStatusTimeline(status: order.status),
           ],
         ),
       ),
     );
   }
 
-
   // =========================================
   // ORDER ITEM
   // =========================================
-
 
   Widget _buildOrderItem(BuildContext context, OrderItemEntity item) {
     final theme = Theme.of(context);
@@ -202,16 +200,17 @@ class OrderDetailsScreen extends ConsumerWidget {
                 width: 90,
                 height: 90,
                 color: theme.colorScheme.surfaceContainerHighest,
-                child: item.productImageUrl != null &&
-                    item.productImageUrl!.isNotEmpty
+                child:
+                    item.productImageUrl != null &&
+                        item.productImageUrl!.isNotEmpty
                     ? CachedNetworkImage(
-                  imageUrl: item.productImageUrl!,
-                  fit: BoxFit.contain,
-                  errorWidget: (_, _, _) => const Icon(
-                    Icons.image_not_supported_outlined,
-                    size: 35,
-                  ),
-                )
+                        imageUrl: item.productImageUrl!,
+                        fit: BoxFit.contain,
+                        errorWidget: (_, _, _) => const Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 35,
+                        ),
+                      )
                     : const Icon(Icons.image_outlined, size: 35),
               ),
             ),
@@ -269,11 +268,9 @@ class OrderDetailsScreen extends ConsumerWidget {
     );
   }
 
-
   // =========================================
   // SHIPPING ADDRESS
   // =========================================
-
 
   Widget _buildShippingAddress(OrderEntity order) {
     final address = order.shippingAddress;
@@ -360,7 +357,6 @@ class OrderDetailsScreen extends ConsumerWidget {
     );
   }
 
-
   // =========================================
   // PRICE DETAILS
   // =========================================
@@ -411,14 +407,12 @@ class OrderDetailsScreen extends ConsumerWidget {
   // PAYMENT DETAILS
   // =========================================
 
-
-  Widget _buildPaymentDetails(BuildContext context,OrderEntity order) {
+  Widget _buildPaymentDetails(BuildContext context, OrderEntity order) {
     final theme = Theme.of(context);
     final paymentStatus = order.paymentStatus.toLowerCase();
 
     final isPaid = paymentStatus == 'paid';
-    final isFailed = paymentStatus == 'failed' ||
-        paymentStatus == 'refunded';
+    final isFailed = paymentStatus == 'failed' || paymentStatus == 'refunded';
 
     final statusColor = isPaid
         ? Colors.green
@@ -445,14 +439,10 @@ class OrderDetailsScreen extends ConsumerWidget {
               children: [
                 const Icon(Icons.payment_outlined),
                 const SizedBox(width: 12),
-                const Expanded(
-                  child: Text('Payment Method'),
-                ),
+                const Expanded(child: Text('Payment Method')),
                 Text(
                   order.paymentMethod?.toUpperCase() ?? 'N/A',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -463,9 +453,7 @@ class OrderDetailsScreen extends ConsumerWidget {
               children: [
                 const Icon(Icons.verified_outlined),
                 const SizedBox(width: 12),
-                const Expanded(
-                  child: Text('Payment Status'),
-                ),
+                const Expanded(child: Text('Payment Status')),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -495,9 +483,7 @@ class OrderDetailsScreen extends ConsumerWidget {
               children: [
                 const Text(
                   'Order Total',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '₹${order.totalAmount.toStringAsFixed(2)}',
@@ -512,7 +498,6 @@ class OrderDetailsScreen extends ConsumerWidget {
       ),
     );
   }
-
 
   // =========================================
   // COMMON HELPERS

@@ -9,7 +9,7 @@ import 'cart_state.dart';
 class CartViewModel extends AsyncNotifier<CartState> {
   @override
   Future<CartState> build() async {
-    final authState  = ref.read(authViewModelProvider);
+    final authState = ref.read(authViewModelProvider);
 
     final user = authState.value;
 

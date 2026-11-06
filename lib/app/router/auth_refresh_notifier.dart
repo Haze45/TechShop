@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -10,14 +9,15 @@ class AuthRefreshNotifier extends ChangeNotifier {
   bool isPasswordRecovery = false;
 
   AuthRefreshNotifier() {
-    _subscription =
-        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-          if (data.event == AuthChangeEvent.passwordRecovery) {
-            isPasswordRecovery = true;
-          }
+    _subscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        isPasswordRecovery = true;
+      }
 
-          notifyListeners();
-        });
+      notifyListeners();
+    });
   }
 
   void clearPasswordRecovery() {

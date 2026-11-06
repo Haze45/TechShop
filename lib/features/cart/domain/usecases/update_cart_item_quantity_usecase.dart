@@ -5,10 +5,7 @@ class UpdateCartItemQuantityUseCase {
 
   UpdateCartItemQuantityUseCase(this.repository);
 
-  Future<void> call({
-    required String itemId,
-    required int quantity,
-  }) {
+  Future<void> call({required String itemId, required int quantity}) {
     if (quantity <= 0) {
       throw ArgumentError('Quantity must be greater than zero.');
     }

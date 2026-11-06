@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,8 +13,7 @@ class UpdatePasswordScreen extends ConsumerStatefulWidget {
       _UpdatePasswordScreenState();
 }
 
-class _UpdatePasswordScreenState
-    extends ConsumerState<UpdatePasswordScreen> {
+class _UpdatePasswordScreenState extends ConsumerState<UpdatePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -37,31 +35,25 @@ class _UpdatePasswordScreenState
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authViewModelProvider.notifier).updatePassword(
-        newPassword: _passwordController.text,
-      );
+      await ref
+          .read(authViewModelProvider.notifier)
+          .updatePassword(newPassword: _passwordController.text);
 
-      ref
-          .read(authRefreshNotifierProvider)
-          .clearPasswordRecovery();
+      ref.read(authRefreshNotifierProvider).clearPasswordRecovery();
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password updated successfully.'),
-        ),
+        const SnackBar(content: Text('Password updated successfully.')),
       );
 
       context.go('/home');
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Unable to update password: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to update password: $e')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -84,10 +76,7 @@ class _UpdatePasswordScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(
-                  Icons.lock_reset,
-                  size: 70,
-                ),
+                const Icon(Icons.lock_reset, size: 70),
                 const SizedBox(height: 20),
 
                 Text(
@@ -150,8 +139,7 @@ class _UpdatePasswordScreenState
                       ),
                       onPressed: () {
                         setState(() {
-                          _obscureConfirmPassword =
-                          !_obscureConfirmPassword;
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
                         });
                       },
                     ),
@@ -176,12 +164,10 @@ class _UpdatePasswordScreenState
                     onPressed: _isLoading ? null : _updatePassword,
                     child: _isLoading
                         ? const SizedBox(
-                      height: 22,
-                      width: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                      ),
-                    )
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Text('Update Password'),
                   ),
                 ),

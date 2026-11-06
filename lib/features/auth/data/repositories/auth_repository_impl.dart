@@ -31,14 +31,8 @@ class AuthRepositoryImpl implements AuthRepository {
   // =========================================
 
   @override
-  Future<UserEntity> signIn({
-    required String email,
-    required String password,
-  }) {
-    return remoteDataSource.signIn(
-      email: email,
-      password: password,
-    );
+  Future<UserEntity> signIn({required String email, required String password}) {
+    return remoteDataSource.signIn(email: email, password: password);
   }
 
   // =========================================
@@ -55,14 +49,8 @@ class AuthRepositoryImpl implements AuthRepository {
   // =========================================
 
   @override
-  Future<void> resetPassword({
-    required String email,
-    String? redirectTo,
-  }) {
-    return remoteDataSource.resetPassword(
-      email: email,
-      redirectTo: redirectTo,
-    );
+  Future<void> resetPassword({required String email, String? redirectTo}) {
+    return remoteDataSource.resetPassword(email: email, redirectTo: redirectTo);
   }
 
   // =========================================
@@ -75,12 +63,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> updatePassword({
-    required String newPassword,
-  }) {
-    return remoteDataSource.updatePassword(
-      newPassword: newPassword,
-    );
+  Future<void> updatePassword({required String newPassword}) {
+    return remoteDataSource.updatePassword(newPassword: newPassword);
   }
 
   // =========================================

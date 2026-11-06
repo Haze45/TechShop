@@ -6,10 +6,7 @@ class GetOrderByIdUseCase {
 
   GetOrderByIdUseCase(this.repository);
 
-  Future<OrderEntity?> call({
-    required String orderId,
-    required String userId,
-  }) {
+  Future<OrderEntity?> call({required String orderId, required String userId}) {
     if (orderId.trim().isEmpty) {
       throw ArgumentError('Order ID cannot be empty.');
     }
@@ -18,9 +15,6 @@ class GetOrderByIdUseCase {
       throw ArgumentError('User ID cannot be empty.');
     }
 
-    return repository.getOrderById(
-      orderId: orderId,
-      userId: userId,
-    );
+    return repository.getOrderById(orderId: orderId, userId: userId);
   }
 }

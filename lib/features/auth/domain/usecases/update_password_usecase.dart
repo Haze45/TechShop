@@ -5,11 +5,7 @@ class UpdatePasswordUseCase {
 
   UpdatePasswordUseCase(this.repository);
 
-  Future<void> call({
-    required String newPassword,
-  }) {
-    return repository.updatePassword(
-      newPassword: newPassword,
-    );
+  Future<void> call({required String newPassword}) {
+    return repository.updatePassword(newPassword: newPassword);
   }
 }

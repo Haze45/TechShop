@@ -60,21 +60,28 @@ class AdminProductCreationDataSource {
     required List<Uint8List> imageBytes,
     required List<String> fileNames,
   }) async {
+    if (imageBytes.length != fileNames.length) {
+      throw ArgumentError(
+        'Image bytes and file names must have equal lengths.',
+      );
+    }
+
     for (var i = 0; i < imageBytes.length; i++) {
       final fileName = fileNames[i];
       final extension = fileName.contains('.')
           ? fileName.split('.').last.toLowerCase()
           : 'jpg';
 
-      final storagePath =
-          '$productId/${DateTime.now().microsecondsSinceEpoch}_$i.$extension';
-
       final contentType = switch (extension) {
+        'jpg' || 'jpeg' => 'image/jpeg',
         'png' => 'image/png',
         'webp' => 'image/webp',
         'gif' => 'image/gif',
-        _ => 'image/jpeg',
+        _ => throw ArgumentError('Unsupported image format: $extension'),
       };
+
+      final storagePath =
+          '$productId/${DateTime.now().microsecondsSinceEpoch}_$i.$extension';
 
       await supabase.storage
           .from('product-images')
