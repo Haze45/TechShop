@@ -162,6 +162,59 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(
+          Icons.warning_amber_rounded,
+          color: Colors.red,
+          size: 40,
+        ),
+        title: const Text('Delete Account?'),
+        content: const Text(
+          'This action is permanent. Your account will be deleted, '
+          'and you may lose access to your profile and saved data. '
+          'Are you sure you want to continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete Account'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref.read(authViewModelProvider.notifier).deleteAccount();
+
+      if (!context.mounted) return;
+
+      context.go('/login');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your account has been deleted.')),
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to delete account: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authViewModelProvider);
@@ -299,6 +352,19 @@ class ProfileScreen extends ConsumerWidget {
                 onPressed: () => _logout(context, ref),
                 icon: const Icon(Icons.logout),
                 label: const Text('Logout'),
+              ),
+
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_forever_outlined,
+                  color: Colors.red,
+                ),
+                title: const Text(
+                  'Delete Account',
+                  style: TextStyle(color: Colors.red),
+                ),
+                subtitle: const Text('Permanently delete your account'),
+                onTap: () => _deleteAccount(context, ref),
               ),
             ],
           );

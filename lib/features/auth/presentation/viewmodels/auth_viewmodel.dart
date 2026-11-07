@@ -167,6 +167,26 @@ class AuthViewModel extends AsyncNotifier<UserEntity?> {
     }
   }
 
+  Future<void> deleteAccount() async {
+    state = const AsyncLoading();
+
+    try {
+      // Remove the current device's FCM token first.
+      try {
+        await DeviceTokenService.instance.removeCurrentDeviceToken();
+      } catch (error) {
+        debugPrint('FCM token removal failed: $error');
+      }
+
+      await ref.read(authRepositoryProvider).deleteAccount();
+
+      state = const AsyncData(null);
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+      rethrow;
+    }
+  }
+
   // =========================================
   // 5. GET CURRENT USER
   // =========================================

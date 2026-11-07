@@ -36,6 +36,9 @@ abstract class AuthRepository {
   });
 
   Future<String?> getAvatarSignedUrl();
+
+  Future<void> deleteAccount();
+
   // Authentication state
   Stream<UserEntity?> get authStateChanges;
 }

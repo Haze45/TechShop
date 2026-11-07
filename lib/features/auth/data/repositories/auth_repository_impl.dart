@@ -93,6 +93,11 @@ class AuthRepositoryImpl implements AuthRepository {
     return remoteDataSource.getAvatarSignedUrl();
   }
 
+  @override
+  Future<void> deleteAccount() {
+    return remoteDataSource.deleteAccount();
+  }
+
   // =========================================
   // 6. AUTH STATE CHANGES
   // =========================================

@@ -196,7 +196,26 @@ class AuthRemoteDataSource {
         .createSignedUrl(filePath, 60 * 60);
   }
 
+  Future<void> deleteAccount() async {
+    final user = supabase.auth.currentUser;
 
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    // Invoke the secure Supabase Edge Function.
+    final response = await supabase.functions.invoke(
+      'delete-account',
+      method: HttpMethod.post,
+    );
+
+    if (response.status != 200) {
+      throw Exception('Unable to delete account.');
+    }
+
+    // Clear the locally stored authentication session.
+    await supabase.auth.signOut();
+  }
 
   // =========================================
   // 6. AUTH STATE CHANGES
