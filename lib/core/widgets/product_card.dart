@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../features/reviews/presentation/widgets/product_rating_widget.dart';
+
 class ProductCard extends StatelessWidget {
+  final String productId;
   final String name;
   final String brand;
   final String imageUrl;
@@ -24,6 +27,7 @@ class ProductCard extends StatelessWidget {
     this.isWishlisted = false,
     this.onTap,
     this.onWishlistTap,
+    required this.productId,
   });
 
   @override
@@ -116,17 +120,9 @@ class ProductCard extends StatelessWidget {
               const SizedBox(height: 6),
 
               // Rating
-              Row(
-                children: [
-                  const Icon(Icons.star, size: 15, color: Colors.amber),
-
-                  const SizedBox(width: 4),
-
-                  Text(
-                    rating.toStringAsFixed(1),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
+              ProductRatingWidget(
+                productId: productId,
+                starSize: 15,
               ),
 
               const SizedBox(height: 6),

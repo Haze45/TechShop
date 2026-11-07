@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../providers/admin_analytics_providers.dart';
 import '../widgets/admin_error_card.dart';
@@ -322,6 +323,20 @@ class AdminDashboardScreen extends ConsumerWidget {
                           color: Colors.green,
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Review Management Navigation
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.rate_review_outlined),
+                        title: const Text('Manage Reviews'),
+                        subtitle: const Text('Approve or reject customer reviews'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          context.go('/admin/reviews');
+                        },
+                      ),
                     ),
                   ],
                 ),

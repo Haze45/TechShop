@@ -123,7 +123,7 @@ class DesignSystemPreview extends ConsumerWidget {
                   oldPrice: 129900,
                   rating: 4.8,
                   onTap: () {},
-                  onWishlistTap: () {},
+                  onWishlistTap: () {}, productId: '',
                 ),
 
                 ProductCard(
@@ -134,7 +134,7 @@ class DesignSystemPreview extends ConsumerWidget {
                   oldPrice: 109900,
                   rating: 4.7,
                   onTap: () {},
-                  onWishlistTap: () {},
+                  onWishlistTap: () {}, productId: '',
                 ),
               ],
             ),

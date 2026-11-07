@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../reviews/presentation/widgets/product_reviews_section.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
@@ -145,6 +146,12 @@ class ProductDetailsScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 _buildSpecifications(product),
+
+                const SizedBox(height: 28),
+
+                ProductReviewsSection(
+                  productId: product.id,
+                ),
 
                 const SizedBox(height: 28),
 
