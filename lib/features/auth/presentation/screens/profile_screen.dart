@@ -257,6 +257,42 @@ class ProfileScreen extends ConsumerWidget {
                 },
               ),
 
+              const Divider(height: 1),
+
+              ListTile(
+                leading: const Icon(Icons.shopping_bag_outlined),
+                title: const Text('My Orders'),
+                subtitle: const Text('View your order history'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  context.push('/orders');
+                },
+              ),
+
+              const Divider(height: 1),
+
+              ListTile(
+                leading: const Icon(Icons.favorite_outline),
+                title: const Text('My Wishlist'),
+                subtitle: const Text('View your saved products'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  context.push('/wishlist');
+                },
+              ),
+
+              const Divider(height: 1),
+
+              ListTile(
+                leading: const Icon(Icons.lock_outline),
+                title: const Text('Change Password'),
+                subtitle: const Text('Update your account password'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  context.push('/update-password');
+                },
+              ),
+
               const SizedBox(height: 24),
 
               FilledButton.icon(
