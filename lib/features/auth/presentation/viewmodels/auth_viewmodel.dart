@@ -137,6 +137,36 @@ class AuthViewModel extends AsyncNotifier<UserEntity?> {
     }
   }
 
+  Future<void> updateProfile({
+    required String fullName,
+    required String phone,
+  }) async {
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .updateProfile(fullName: fullName, phone: phone);
+
+      // Refresh the current authenticated user.
+      state = AsyncData(ref.read(authRepositoryProvider).getCurrentUser());
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<String> uploadAvatar({
+    required Uint8List imageBytes,
+    required String fileName,
+  }) async {
+    try {
+      return await ref
+          .read(authRepositoryProvider)
+          .uploadAvatar(imageBytes: imageBytes, fileName: fileName);
+    } catch (error) {
+      rethrow;
+    }
+  }
+
   // =========================================
   // 5. GET CURRENT USER
   // =========================================

@@ -92,6 +92,24 @@ class AddressViewModel extends AsyncNotifier<void> {
       rethrow;
     }
   }
+
+  // Set default address.
+  Future<void> setDefaultAddress(String addressId) async {
+    state = const AsyncLoading();
+
+    try {
+      await ref
+          .read(addressRepositoryProvider)
+          .setDefaultAddress(addressId);
+
+      ref.invalidate(addressesProvider);
+
+      state = const AsyncData(null);
+    } catch (error, stackTrace) {
+      state = AsyncError(error, stackTrace);
+      rethrow;
+    }
+  }
 }
 
 final addressViewModelProvider =

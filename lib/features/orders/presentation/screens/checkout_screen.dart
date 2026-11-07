@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../../../core/config/env.dart';
+import '../../../addresses/domain/entities/address_entity.dart';
+import '../../../addresses/presentation/providers/address_providers.dart';
 import '../../../cart/presentation/viewmodels/cart_state.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../../../payment/data/models/payment_verification_model.dart';
@@ -30,6 +32,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _stateController = TextEditingController();
   final _postalCodeController = TextEditingController();
 
+  String? _selectedAddressId;
+  String _selectedCountry = 'India';
+
   // Default payment method
   String _selectedPaymentMethod = 'cod';
 
@@ -47,6 +52,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       onPaymentError: _handlePaymentError,
       onExternalWallet: _handleExternalWallet,
     );
+
+    Future.microtask(_loadDefaultAddress);
   }
 
   @override
@@ -91,6 +98,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ref
+                .watch(addressesProvider)
+                .when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      'Unable to load saved addresses. You can enter your address manually.',
+                    ),
+                  ),
+                  data: (addresses) => _buildSavedAddressSection(addresses),
+                ),
+
             DeliveryAddressForm(
               nameController: _nameController,
               phoneController: _phoneController,
@@ -268,11 +289,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final shippingAddress = {
         'full_name': _nameController.text.trim(),
         'phone': _phoneController.text.trim(),
+
+        // Keep the existing combined address for compatibility.
         'address': _addressController.text.trim(),
-        'landmark': _landmarkController.text.trim(),
+
         'city': _cityController.text.trim(),
         'state': _stateController.text.trim(),
         'postal_code': _postalCodeController.text.trim(),
+
+        // Additional structured information.
+        'country': _selectedCountry,
       };
 
       final orderId = await ref
@@ -492,6 +518,127 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           'External wallet selected: ${response.walletName ?? 'Unknown'}',
         ),
       ),
+    );
+  }
+
+  Future<void> _loadDefaultAddress() async {
+    try {
+      final addresses = await ref.read(addressesProvider.future);
+
+      if (!mounted || addresses.isEmpty) return;
+
+      final defaultAddress = addresses.where((a) => a.isDefault);
+
+      if (defaultAddress.isNotEmpty && _selectedAddressId == null) {
+        _selectAddress(defaultAddress.first);
+      }
+    } catch (error) {
+      debugPrint('Unable to load saved addresses: $error');
+    }
+  }
+
+  void _selectAddress(AddressEntity address) {
+    setState(() {
+      _selectedAddressId = address.id;
+
+      _nameController.text = address.fullName;
+      _phoneController.text = address.phone;
+
+      _addressController.text = [
+        address.addressLine1,
+        if (address.addressLine2 != null && address.addressLine2!.isNotEmpty)
+          address.addressLine2!,
+      ].join(', ');
+
+      _landmarkController.clear();
+      _cityController.text = address.city;
+      _stateController.text = address.state;
+      _postalCodeController.text = address.postalCode;
+
+      _selectedCountry = address.country;
+    });
+  }
+
+  Future<void> _manageAddresses() async {
+    await context.push('/addresses');
+
+    if (!mounted) return;
+
+    // Reload the saved addresses.
+    ref.invalidate(addressesProvider);
+
+    try {
+      final addresses = await ref.read(addressesProvider.future);
+
+      if (!mounted || addresses.isEmpty) return;
+
+      // Select the default address after returning.
+      final defaultAddress = addresses.where((address) => address.isDefault);
+
+      if (defaultAddress.isNotEmpty) {
+        _selectAddress(defaultAddress.first);
+      }
+    } catch (error) {
+      debugPrint('Unable to refresh saved addresses: $error');
+    }
+  }
+
+  Widget _buildSavedAddressSection(List<AddressEntity> addresses) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Saved Delivery Addresses',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+
+        if (addresses.isEmpty)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'No saved addresses found. Enter your delivery address below.',
+              ),
+            ),
+          )
+        else
+          Card(
+            child: Column(
+              children: addresses.map((address) {
+                return RadioListTile<String>(
+                  value: address.id,
+                  groupValue: _selectedAddressId,
+                  onChanged: (_) => _selectAddress(address),
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(address.fullName)),
+                      if (address.isDefault) const Chip(label: Text('Default')),
+                    ],
+                  ),
+                  subtitle: Text(
+                    '${address.addressLine1}, '
+                    '${address.city}, ${address.state} '
+                    '${address.postalCode}\\n'
+                    'Phone: ${address.phone}',
+                  ),
+                  isThreeLine: true,
+                );
+              }).toList(),
+            ),
+          ),
+
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _manageAddresses,
+            icon: const Icon(Icons.location_on_outlined),
+            label: const Text('Manage Saved Addresses'),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

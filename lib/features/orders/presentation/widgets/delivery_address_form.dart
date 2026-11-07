@@ -39,6 +39,19 @@ class DeliveryAddressForm extends StatelessWidget {
           label: 'Phone Number',
           icon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter your phone number';
+            }
+
+            final phone = value.trim();
+
+            if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(phone)) {
+              return 'Enter a valid phone number';
+            }
+
+            return null;
+          },
         ),
 
         _buildField(
@@ -79,6 +92,17 @@ class DeliveryAddressForm extends StatelessWidget {
           label: 'PIN Code',
           icon: Icons.markunread_mailbox_outlined,
           keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter your PIN code';
+            }
+
+            if (!RegExp(r'^[1-9][0-9]{5}$').hasMatch(value.trim())) {
+              return 'Enter a valid 6-digit Indian PIN code';
+            }
+
+            return null;
+          },
         ),
       ],
     );
@@ -90,6 +114,7 @@ class DeliveryAddressForm extends StatelessWidget {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     bool required = true,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -102,15 +127,17 @@ class DeliveryAddressForm extends StatelessWidget {
           prefixIcon: Icon(icon),
           border: const OutlineInputBorder(),
         ),
-        validator: (value) {
-          if (!required) return null;
+        validator:
+            validator ??
+            (value) {
+              if (!required) return null;
 
-          if (value == null || value.trim().isEmpty) {
-            return 'Please enter $label';
-          }
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter $label';
+              }
 
-          return null;
-        },
+              return null;
+            },
       ),
     );
   }

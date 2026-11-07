@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -65,6 +67,30 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> updatePassword({required String newPassword}) {
     return remoteDataSource.updatePassword(newPassword: newPassword);
+  }
+
+  @override
+  Future<void> updateProfile({
+    required String fullName,
+    required String phone,
+  }) {
+    return remoteDataSource.updateProfile(fullName: fullName, phone: phone);
+  }
+
+  @override
+  Future<String> uploadAvatar({
+    required Uint8List imageBytes,
+    required String fileName,
+  }) {
+    return remoteDataSource.uploadAvatar(
+      imageBytes: imageBytes,
+      fileName: fileName,
+    );
+  }
+
+  @override
+  Future<String?> getAvatarSignedUrl() {
+    return remoteDataSource.getAvatarSignedUrl();
   }
 
   // =========================================

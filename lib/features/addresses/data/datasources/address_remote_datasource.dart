@@ -121,4 +121,18 @@ class AddressRemoteDataSource {
         .eq('id', addressId)
         .eq('user_id', userId);
   }
+
+  // Set an address as the default address.
+  Future<void> setDefaultAddress(String addressId) async {
+    final userId = supabase.auth.currentUser?.id;
+
+    if (userId == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    await supabase.rpc(
+      'set_default_address',
+      params: {'p_address_id': addressId},
+    );
+  }
 }

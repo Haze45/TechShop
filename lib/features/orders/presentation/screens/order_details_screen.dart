@@ -282,15 +282,18 @@ class OrderDetailsScreen extends ConsumerWidget {
     final name = getValue('full_name');
     final phone = getValue('phone');
     final street = getValue('address');
+    final addressLine2 = getValue('address_line2');
     final landmark = getValue('landmark');
     final city = getValue('city');
     final state = getValue('state');
     final postalCode = getValue('postal_code');
+    final country = getValue('country');
 
     final location = [
       city,
       state,
       postalCode,
+      country,
     ].where((value) => value.isNotEmpty).join(', ');
 
     return Card(
@@ -299,6 +302,7 @@ class OrderDetailsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Customer Name
             Row(
               children: [
                 const Icon(Icons.person_outline),
@@ -317,6 +321,7 @@ class OrderDetailsScreen extends ConsumerWidget {
 
             const SizedBox(height: 16),
 
+            // Delivery Address
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -327,10 +332,17 @@ class OrderDetailsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (street.isNotEmpty) Text(street),
+
+                      if (addressLine2.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Text(addressLine2),
+                      ],
+
                       if (landmark.isNotEmpty) ...[
                         const SizedBox(height: 5),
                         Text('Landmark: $landmark'),
                       ],
+
                       if (location.isNotEmpty) ...[
                         const SizedBox(height: 5),
                         Text(location),
@@ -341,6 +353,7 @@ class OrderDetailsScreen extends ConsumerWidget {
               ],
             ),
 
+            // Phone Number
             if (phone.isNotEmpty) ...[
               const SizedBox(height: 16),
               Row(

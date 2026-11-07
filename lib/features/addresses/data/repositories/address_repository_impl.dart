@@ -68,4 +68,9 @@ class AddressRepositoryImpl implements AddressRepository {
   Future<void> deleteAddress(String addressId) {
     return remoteDataSource.deleteAddress(addressId);
   }
+
+  @override
+  Future<void> setDefaultAddress(String addressId) {
+    return remoteDataSource.setDefaultAddress(addressId);
+  }
 }

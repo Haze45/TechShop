@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:mime/mime.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/user_model.dart';
@@ -89,6 +92,111 @@ class AuthRemoteDataSource {
   Future<void> updatePassword({required String newPassword}) async {
     await supabase.auth.updateUser(UserAttributes(password: newPassword));
   }
+
+  Future<void> updateProfile({
+    required String fullName,
+    required String phone,
+  }) async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    // Update the profiles table.
+    await supabase.from('profiles').upsert({
+      'id': user.id,
+      'full_name': fullName.trim(),
+      'phone': phone.trim(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    });
+
+    // Keep Supabase Auth metadata synchronized.
+    await supabase.auth.updateUser(
+      UserAttributes(
+        data: {'full_name': fullName.trim(), 'phone': phone.trim()},
+      ),
+    );
+  }
+
+  Future<String> uploadAvatar({
+    required Uint8List imageBytes,
+    required String fileName,
+  }) async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final extension = fileName.split('.').last.toLowerCase();
+
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+    if (!allowedExtensions.contains(extension)) {
+      throw Exception('Only JPG, PNG and WEBP images are allowed.');
+    }
+
+    final mimeType = lookupMimeType(fileName);
+
+    if (mimeType == null) {
+      throw Exception('Unable to determine image format.');
+    }
+
+    final filePath =
+        '${user.id}/avatar_${DateTime.now().millisecondsSinceEpoch}.$extension';
+
+    await supabase.storage
+        .from('user-avatars')
+        .uploadBinary(
+          filePath,
+          imageBytes,
+          fileOptions: FileOptions(contentType: mimeType, upsert: false),
+        );
+
+    // Save the storage path in the profiles table.
+    await supabase.from('profiles').upsert({
+      'id': user.id,
+      'avatar_url': filePath,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    });
+
+    // Synchronize the Auth metadata with the storage path.
+    await supabase.auth.updateUser(
+      UserAttributes(data: {'avatar_url': filePath}),
+    );
+
+    // Return a temporary URL for displaying the image.
+    return supabase.storage
+        .from('user-avatars')
+        .createSignedUrl(filePath, 60 * 60);
+  }
+
+  Future<String?> getAvatarSignedUrl() async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      return null;
+    }
+
+    final response = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    final filePath = response?['avatar_url'] as String?;
+
+    if (filePath == null || filePath.isEmpty) {
+      return null;
+    }
+
+    return supabase.storage
+        .from('user-avatars')
+        .createSignedUrl(filePath, 60 * 60);
+  }
+
+
 
   // =========================================
   // 6. AUTH STATE CHANGES

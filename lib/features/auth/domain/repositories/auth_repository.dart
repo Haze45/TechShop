@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
@@ -23,6 +25,17 @@ abstract class AuthRepository {
 
   Future<void> updatePassword({required String newPassword});
 
+  Future<void> updateProfile({
+    required String fullName,
+    required String phone,
+  });
+
+  Future<String> uploadAvatar({
+    required Uint8List imageBytes,
+    required String fileName,
+  });
+
+  Future<String?> getAvatarSignedUrl();
   // Authentication state
   Stream<UserEntity?> get authStateChanges;
 }

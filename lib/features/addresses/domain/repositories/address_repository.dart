@@ -29,4 +29,5 @@ abstract class AddressRepository {
   });
 
   Future<void> deleteAddress(String addressId);
+  Future<void> setDefaultAddress(String addressId);
 }
