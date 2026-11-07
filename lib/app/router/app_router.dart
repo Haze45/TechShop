@@ -6,6 +6,7 @@ import '../../features/addresses/presentation/screens/addresses_screen.dart';
 import '../../features/admin/presentation/screens/add_product_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/providers/admin_providers.dart';
+import '../../features/admin/presentation/screens/admin_order_details_screen.dart';
 import '../../features/admin/presentation/screens/admin_products_screen.dart';
 import '../../features/admin/presentation/screens/admin_reviews_screen.dart';
 import '../../features/admin/presentation/screens/edit_product_screen.dart';
@@ -158,6 +159,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/addresses',
         builder: (context, state) => const AddressesScreen(),
+      ),
+      GoRoute(
+        path: '/admin/orders/:orderId',
+        builder: (context, state) {
+          final orderId = state.pathParameters['orderId']!;
+
+          return AdminOrderDetailsScreen(orderId: orderId);
+        },
       ),
     ],
   );
