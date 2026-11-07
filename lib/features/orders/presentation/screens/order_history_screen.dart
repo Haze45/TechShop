@@ -391,6 +391,11 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
 
             const SizedBox(height: 16),
 
+            // Delivery information
+            _buildDeliveryPreview(context, order),
+
+            const SizedBox(height: 16),
+
             // Payment information
             Row(
               children: [
@@ -446,6 +451,48 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDeliveryPreview(BuildContext context, OrderEntity order) {
+    final address = order.shippingAddress;
+
+    final name = (address['full_name'] ?? '').toString().trim();
+    final city = (address['city'] ?? '').toString().trim();
+    final state = (address['state'] ?? '').toString().trim();
+    final postalCode = (address['postal_code'] ?? '').toString().trim();
+
+    final location = [
+      city,
+      state,
+      postalCode,
+    ].where((value) => value.isNotEmpty).join(', ');
+
+    if (name.isEmpty && location.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.location_on_outlined, size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (name.isNotEmpty)
+                Text(
+                  'Deliver to: $name',
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              if (location.isNotEmpty)
+                Text(location, style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
