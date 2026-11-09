@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../comparison/presentation/providers/comparison_provider.dart';
+import '../../../comparison/presentation/widgets/comparison_button.dart';
 import '../../../reviews/presentation/widgets/product_reviews_section.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
@@ -75,6 +77,7 @@ class ProductDetailsScreen extends ConsumerWidget {
               color: Colors.red,
             ),
           ),
+          ComparisonButton(),
         ],
       ),
       body: productAsync.when(
@@ -122,6 +125,10 @@ class ProductDetailsScreen extends ConsumerWidget {
 
                 _buildStockStatus(product),
 
+                const SizedBox(height: 16),
+
+                _buildCompareButton(context, ref, product),
+
                 const SizedBox(height: 20),
 
                 if (product.description != null &&
@@ -149,9 +156,7 @@ class ProductDetailsScreen extends ConsumerWidget {
 
                 const SizedBox(height: 28),
 
-                ProductReviewsSection(
-                  productId: product.id,
-                ),
+                ProductReviewsSection(productId: product.id),
 
                 const SizedBox(height: 28),
 
@@ -306,6 +311,48 @@ class ProductDetailsScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCompareButton(
+    BuildContext context,
+    WidgetRef ref,
+    ProductEntity product,
+  ) {
+    final comparisonIds = ref.watch(comparisonProvider);
+    final isCompared = comparisonIds.contains(product.id);
+
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          try {
+            if (isCompared) {
+              ref.read(comparisonProvider.notifier).removeProduct(product.id);
+            } else {
+              ref
+                  .read(comparisonProvider.notifier)
+                  .addProduct(product.id, categoryId: product.categoryId);
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  isCompared
+                      ? 'Removed from comparison'
+                      : 'Added to comparison',
+                ),
+              ),
+            );
+          } catch (error) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(error.toString())));
+          }
+        },
+        icon: Icon(isCompared ? Icons.check : Icons.compare_arrows),
+        label: Text(isCompared ? 'Added to Comparison' : 'Add to Compare'),
+      ),
     );
   }
 

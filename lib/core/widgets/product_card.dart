@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/comparison/presentation/providers/comparison_provider.dart';
 import '../../features/reviews/presentation/widgets/product_rating_widget.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   final String productId;
   final String name;
   final String brand;
@@ -12,6 +14,7 @@ class ProductCard extends StatelessWidget {
   final double? oldPrice;
   final double rating;
   final bool isWishlisted;
+  final int categoryId;
 
   final VoidCallback? onTap;
   final VoidCallback? onWishlistTap;
@@ -28,11 +31,14 @@ class ProductCard extends StatelessWidget {
     this.onTap,
     this.onWishlistTap,
     required this.productId,
+    required this.categoryId,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final comparisonIds = ref.watch(comparisonProvider);
+    final isCompared = comparisonIds.contains(productId);
 
     return Card(
       elevation: 0,
@@ -91,6 +97,50 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: IconButton.filledTonal(
+                        tooltip: isCompared
+                            ? 'Remove from comparison'
+                            : 'Compare product',
+                        onPressed: () {
+                          try {
+                            if (isCompared) {
+                              ref
+                                  .read(comparisonProvider.notifier)
+                                  .removeProduct(productId);
+                            } else {
+                              ref
+                                  .read(comparisonProvider.notifier)
+                                  .addProduct(
+                                    productId,
+                                    categoryId: categoryId,
+                                  );
+                            }
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isCompared
+                                      ? 'Removed from comparison'
+                                      : 'Added to comparison',
+                                ),
+                              ),
+                            );
+                          } catch (error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(error.toString())),
+                            );
+                          }
+                        },
+                        icon: Icon(
+                          isCompared
+                              ? Icons.compare_arrows
+                              : Icons.compare_arrows_outlined,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -120,10 +170,7 @@ class ProductCard extends StatelessWidget {
               const SizedBox(height: 6),
 
               // Rating
-              ProductRatingWidget(
-                productId: productId,
-                starSize: 15,
-              ),
+              ProductRatingWidget(productId: productId, starSize: 15),
 
               const SizedBox(height: 6),
 

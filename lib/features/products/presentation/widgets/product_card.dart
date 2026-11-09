@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../comparison/presentation/providers/comparison_provider.dart';
 import '../../domain/entities/product_entity.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   final ProductEntity product;
   final VoidCallback? onTap;
   final bool isWishlisted;
@@ -34,8 +36,11 @@ class ProductCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final imageUrl = _primaryImage;
+
+    final comparisonIds = ref.watch(comparisonProvider);
+    final isCompared = comparisonIds.contains(product.id);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -118,6 +123,62 @@ class ProductCard extends StatelessWidget {
                         tooltip: isWishlisted
                             ? 'Remove from wishlist'
                             : 'Add to wishlist',
+                      ),
+                    ),
+                  ),
+
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        tooltip: isCompared
+                            ? 'Remove from comparison'
+                            : 'Compare product',
+                        icon: Icon(
+                          isCompared
+                              ? Icons.compare_arrows
+                              : Icons.compare_arrows_outlined,
+                          color: isCompared ? Colors.blue : Colors.grey,
+                        ),
+                        iconSize: 20,
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          try {
+                            if (isCompared) {
+                              ref
+                                  .read(comparisonProvider.notifier)
+                                  .removeProduct(product.id);
+                            } else {
+                              ref
+                                  .read(comparisonProvider.notifier)
+                                  .addProduct(
+                                    product.id,
+                                    categoryId: product.categoryId,
+                                  );
+                            }
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isCompared
+                                      ? 'Removed from comparison'
+                                      : 'Added to comparison',
+                                ),
+                              ),
+                            );
+                          } catch (error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(error.toString())),
+                            );
+                          }
+                        },
                       ),
                     ),
                   ),

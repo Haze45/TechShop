@@ -16,6 +16,7 @@ import '../../features/auth/presentation/screens/profile_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/update_password_screen.dart';
 import '../../features/cart/presentation/screens/cart_screen.dart';
+import '../../features/comparison/presentation/screens/comparison_screen.dart';
 import '../../features/orders/presentation/screens/checkout_screen.dart';
 import '../../features/orders/presentation/screens/order_details_screen.dart';
 import '../../features/orders/presentation/screens/order_history_screen.dart';
@@ -205,6 +206,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
           return AdminSupportTicketDetailsScreen(ticketId: ticketId);
         },
+      ),
+      GoRoute(
+        path: '/compare',
+        builder: (context, state) => const ComparisonScreen(),
       ),
     ],
   );

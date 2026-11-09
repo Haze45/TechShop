@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
+import '../../../comparison/presentation/widgets/comparison_button.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_state.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
@@ -100,6 +101,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             onPressed: () => context.push('/orders'),
             icon: const Icon(Icons.receipt_long_outlined),
           ),
+          ComparisonButton(),
         ],
       ),
 
