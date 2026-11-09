@@ -22,6 +22,11 @@ import '../../features/orders/presentation/screens/order_history_screen.dart';
 import '../../features/products/domain/entities/product_entity.dart';
 import '../../features/products/presentation/screens/product_details_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
+import '../../features/support/presentation/screens/admin_support_ticket_details_screen.dart';
+import '../../features/support/presentation/screens/admin_support_tickets_screen.dart';
+import '../../features/support/presentation/screens/create_support_ticket_screen.dart';
+import '../../features/support/presentation/screens/my_support_tickets_screen.dart';
+import '../../features/support/presentation/screens/support_ticket_details_screen.dart';
 import '../../features/wishlist/presentation/screens/wishlist_screen.dart';
 import 'auth_refresh_provider.dart';
 
@@ -166,6 +171,39 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final orderId = state.pathParameters['orderId']!;
 
           return AdminOrderDetailsScreen(orderId: orderId);
+        },
+      ),
+      GoRoute(
+        path: '/support/create',
+        builder: (context, state) {
+          return const CreateSupportTicketScreen();
+        },
+      ),
+      GoRoute(
+        path: '/support',
+        builder: (context, state) {
+          return const MySupportTicketsScreen();
+        },
+      ),
+      GoRoute(
+        path: '/support/:ticketId',
+        builder: (context, state) {
+          final ticketId = state.pathParameters['ticketId']!;
+
+          return SupportTicketDetailsScreen(ticketId: ticketId);
+        },
+      ),
+      GoRoute(
+        path: '/admin/support',
+        builder: (context, state) => const AdminSupportTicketsScreen(),
+      ),
+
+      GoRoute(
+        path: '/admin/support/:ticketId',
+        builder: (context, state) {
+          final ticketId = state.pathParameters['ticketId']!;
+
+          return AdminSupportTicketDetailsScreen(ticketId: ticketId);
         },
       ),
     ],

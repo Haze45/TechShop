@@ -79,19 +79,22 @@ class ProfileScreen extends ConsumerWidget {
     if (result == true) {
       if (!context.mounted) return;
 
-      if (nameController.text.trim().isEmpty ||
-          phoneController.text.trim().isEmpty) {
+      final name = nameController.text.trim();
+      final phone = phoneController.text.trim();
+
+      if (name.isEmpty || phone.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please fill in all fields.')),
+        );
+      } else if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(phone)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid phone number.')),
         );
       } else {
         try {
           await ref
               .read(authViewModelProvider.notifier)
-              .updateProfile(
-                fullName: nameController.text,
-                phone: phoneController.text,
-              );
+              .updateProfile(fullName: name, phone: phone);
 
           if (!context.mounted) return;
 
@@ -331,6 +334,30 @@ class ProfileScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
                   context.push('/wishlist');
+                },
+              ),
+
+              const Divider(height: 1),
+
+              ListTile(
+                leading: const Icon(Icons.support_agent),
+                title: const Text('Customer Support'),
+                subtitle: const Text('Create a support ticket'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  context.push('/support/create');
+                },
+              ),
+
+              const Divider(height: 1),
+
+              ListTile(
+                leading: const Icon(Icons.support_agent),
+                title: const Text('My Support Tickets'),
+                subtitle: const Text('View your support requests'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () {
+                  context.push('/support');
                 },
               ),
 

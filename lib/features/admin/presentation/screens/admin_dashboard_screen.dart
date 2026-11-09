@@ -331,10 +331,27 @@ class AdminDashboardScreen extends ConsumerWidget {
                       child: ListTile(
                         leading: const Icon(Icons.rate_review_outlined),
                         title: const Text('Manage Reviews'),
-                        subtitle: const Text('Approve or reject customer reviews'),
+                        subtitle: const Text(
+                          'Approve or reject customer reviews',
+                        ),
                         trailing: const Icon(Icons.arrow_forward_ios),
                         onTap: () {
                           context.go('/admin/reviews');
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Customer Support Navigation
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.support_agent),
+                        title: const Text('Customer Support'),
+                        subtitle: const Text('Manage customer support tickets'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          context.push('/admin/support');
                         },
                       ),
                     ),
