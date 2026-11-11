@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../comparison/presentation/providers/comparison_provider.dart';
 import '../../../comparison/presentation/widgets/comparison_button.dart';
@@ -11,6 +12,9 @@ import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
+import '../viewmodels/product_state.dart';
+import '../widgets/product_image_gallery.dart';
+import '../widgets/product_purchase_section.dart';
 
 class ProductDetailsScreen extends ConsumerWidget {
   final String productId;
@@ -20,6 +24,7 @@ class ProductDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productAsync = ref.watch(productDetailsProvider(productId));
+    final catalogState = ref.watch(productViewModelProvider).value;
     ref.listen<AsyncValue<ProductEntity?>>(productDetailsProvider(productId), (
       previous,
       next,
@@ -38,6 +43,15 @@ class ProductDetailsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Product Details'),
         actions: [
+          if (productAsync.value != null)
+            IconButton(
+              tooltip: 'Share Product',
+              icon: const Icon(Icons.share_outlined),
+              onPressed: () {
+                _shareProduct(productAsync.value!);
+              },
+            ),
+
           IconButton(
             tooltip: 'Wishlist',
             onPressed:
@@ -92,15 +106,84 @@ class ProductDetailsScreen extends ConsumerWidget {
         ],
       ),
       body: productAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) =>
-            Center(child: Text('Unable to load product: $error')),
+        loading: () => const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading product details...'),
+            ],
+          ),
+        ),
+
+        error: (error, stackTrace) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.wifi_off_outlined,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Unable to load product',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Please check your internet connection and try again.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  onPressed: () {
+                    ref.invalidate(productDetailsProvider(productId));
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Try Again'),
+                ),
+              ],
+            ),
+          ),
+        ),
+
         data: (product) {
           if (product == null) {
-            return const Center(child: Text('Product not found'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.inventory_2_outlined,
+                    size: 70,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Product Not Found',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'This product may have been removed or is unavailable.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  OutlinedButton.icon(
+                    onPressed: () => context.pop(),
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            );
           }
 
-          return _buildProductDetails(context, ref, product);
+          return _buildProductDetails(context, ref, product, catalogState);
         },
       ),
     );
@@ -110,6 +193,7 @@ class ProductDetailsScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     ProductEntity product,
+    ProductState? catalogState,
   ) {
     return SingleChildScrollView(
       child: Column(
@@ -128,6 +212,9 @@ class ProductDetailsScreen extends ConsumerWidget {
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
 
+                _buildProductInformation(product, catalogState),
+                const SizedBox(height: 16),
+
                 const SizedBox(height: 12),
 
                 _buildPrice(context, product),
@@ -135,6 +222,10 @@ class ProductDetailsScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 _buildStockStatus(product),
+
+                const SizedBox(height: 16),
+
+                _buildDeliveryInformation(product),
 
                 const SizedBox(height: 16),
 
@@ -171,57 +262,11 @@ class ProductDetailsScreen extends ConsumerWidget {
 
                 const SizedBox(height: 28),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    onPressed: product.stockQuantity <= 0
-                        ? null
-                        : () async {
-                            try {
-                              await ref
-                                  .read(cartViewModelProvider.notifier)
-                                  .addToCart(
-                                    productId: product.id,
-                                    quantity: 1,
-                                  );
+                _buildRelatedProducts(context, catalogState, product),
 
-                              if (!context.mounted) return;
+                const SizedBox(height: 28),
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '${product.name} added to cart!',
-                                  ),
-                                  action: SnackBarAction(
-                                    label: 'View Cart',
-                                    onPressed: () {
-                                      context.push('/cart');
-                                    },
-                                  ),
-                                ),
-                              );
-                            } catch (error) {
-                              if (!context.mounted) return;
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Unable to add product: $error',
-                                  ),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          },
-                    icon: const Icon(Icons.shopping_cart_outlined),
-                    label: Text(
-                      product.stockQuantity <= 0
-                          ? 'Out of Stock'
-                          : 'Add to Cart',
-                    ),
-                  ),
-                ),
+                ProductPurchaseSection(product: product),
               ],
             ),
           ),
@@ -235,7 +280,7 @@ class ProductDetailsScreen extends ConsumerWidget {
 
     if (images.isEmpty) {
       return Container(
-        height: 300,
+        height: 320,
         width: double.infinity,
         color: Colors.grey.shade100,
         child: const Icon(
@@ -246,25 +291,8 @@ class ProductDetailsScreen extends ConsumerWidget {
       );
     }
 
-    return SizedBox(
-      height: 320,
-      child: PageView.builder(
-        itemCount: images.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.all(20),
-            child: CachedNetworkImage(
-              imageUrl: images[index].imageUrl,
-              fit: BoxFit.contain,
-              placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) => const Center(
-                child: Icon(Icons.broken_image_outlined, size: 60),
-              ),
-            ),
-          );
-        },
-      ),
+    return ProductImageGallery(
+      imageUrls: images.map((image) => image.imageUrl).toList(),
     );
   }
 
@@ -304,23 +332,157 @@ class ProductDetailsScreen extends ConsumerWidget {
   }
 
   Widget _buildStockStatus(ProductEntity product) {
-    return Row(
-      children: [
-        Icon(
-          product.isInStock ? Icons.check_circle : Icons.cancel,
-          color: product.isInStock ? Colors.green : Colors.red,
-          size: 18,
-        ),
-        const SizedBox(width: 8),
-        Text(
-          product.isInStock
-              ? '${product.stockQuantity} items available'
-              : 'Out of stock',
-          style: TextStyle(
-            color: product.isInStock ? Colors.green : Colors.red,
-            fontWeight: FontWeight.w600,
+    final int quantity = product.stockQuantity;
+
+    final bool isOutOfStock = quantity <= 0;
+    final bool isLowStock = quantity > 0 && quantity <= 5;
+
+    final Color statusColor = isOutOfStock
+        ? Colors.red
+        : isLowStock
+        ? Colors.orange
+        : Colors.green;
+
+    final String statusText = isOutOfStock
+        ? 'Out of Stock'
+        : isLowStock
+        ? 'Only $quantity left in stock'
+        : 'In Stock';
+
+    final IconData statusIcon = isOutOfStock
+        ? Icons.cancel_outlined
+        : isLowStock
+        ? Icons.warning_amber_rounded
+        : Icons.check_circle_outline;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: statusColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(statusIcon, color: statusColor, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                if (!isOutOfStock)
+                  Text(
+                    '$quantity units available',
+                    style: TextStyle(color: statusColor, fontSize: 12),
+                  ),
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  String _getCatalogName(List<Map<String, dynamic>> items, int id) {
+    for (final item in items) {
+      if ((item['id'] as num?)?.toInt() == id) {
+        return item['name'] as String? ?? 'Unknown';
+      }
+    }
+
+    return 'Unknown';
+  }
+
+  Widget _buildProductInformation(
+    ProductEntity product,
+    ProductState? catalogState,
+  ) {
+    final brandName = _getCatalogName(
+      catalogState?.brands ?? [],
+      product.brandId,
+    );
+
+    final categoryName = _getCatalogName(
+      catalogState?.categories ?? [],
+      product.categoryId,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            Chip(
+              avatar: const Icon(Icons.business, size: 16),
+              label: Text(brandName),
+            ),
+            Chip(
+              avatar: const Icon(Icons.category_outlined, size: 16),
+              label: Text(categoryName),
+            ),
+          ],
         ),
+
+        const SizedBox(height: 8),
+
+        Row(
+          children: [
+            const Icon(Icons.qr_code, size: 18),
+            const SizedBox(width: 8),
+            const Text('SKU: ', style: TextStyle(fontWeight: FontWeight.w600)),
+            Expanded(child: Text(product.sku)),
+          ],
+        ),
+
+        if (product.specifications.isNotEmpty) ...[
+          const SizedBox(height: 20),
+
+          const Text(
+            'Product Highlights',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 10),
+
+          ...product.specifications.entries.take(4).map((entry) {
+            final label = entry.key
+                .replaceAll('_', ' ')
+                .split(' ')
+                .map(
+                  (word) => word.isEmpty
+                      ? word
+                      : '${word[0].toUpperCase()}${word.substring(1)}',
+                )
+                .join(' ');
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    size: 18,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text('$label: ${entry.value}')),
+                ],
+              ),
+            );
+          }),
+        ],
       ],
     );
   }
@@ -404,6 +566,189 @@ class ProductDetailsScreen extends ConsumerWidget {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildDeliveryInformation(ProductEntity product) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.local_shipping_outlined, size: 22),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Delivery Information',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on_outlined, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Select your saved delivery address during checkout '
+                  'to view available delivery options.',
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          if (product.stockQuantity <= 0) ...[
+            const SizedBox(height: 10),
+            const Text(
+              'This product is currently unavailable for purchase.',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRelatedProducts(
+    BuildContext context,
+    ProductState? catalogState,
+    ProductEntity currentProduct,
+  ) {
+    final relatedProducts = (catalogState?.products ?? [])
+        .where(
+          (product) =>
+              product.categoryId == currentProduct.categoryId &&
+              product.id != currentProduct.id &&
+              product.isActive,
+        )
+        .take(10)
+        .toList();
+
+    if (relatedProducts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'Related Products',
+            style: Theme.of(context).textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        SizedBox(
+          height: 245,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: relatedProducts.length,
+            itemBuilder: (context, index) {
+              final product = relatedProducts[index];
+
+              return GestureDetector(
+                onTap: () {
+                  context.push('/product/${product.id}');
+                },
+                child: Container(
+                  width: 155,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.25),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12),
+                        ),
+                        child: SizedBox(
+                          height: 135,
+                          width: double.infinity,
+                          child: product.images.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: product.images.first.imageUrl,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.image_not_supported),
+                                )
+                              : const Icon(Icons.image_not_supported, size: 40),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Text(
+                              '₹${product.price.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _shareProduct(ProductEntity product) async {
+    final productDetails =
+        '''
+Check out this product on TechShop!
+
+${product.name}
+
+Price: ₹${product.price.toStringAsFixed(2)}
+
+${product.description ?? 'Explore this product on TechShop.'}
+
+''';
+
+    await SharePlus.instance.share(
+      ShareParams(subject: product.name, text: productDetails),
     );
   }
 }
