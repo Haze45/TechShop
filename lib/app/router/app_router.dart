@@ -23,6 +23,7 @@ import '../../features/orders/presentation/screens/order_history_screen.dart';
 import '../../features/products/domain/entities/product_entity.dart';
 import '../../features/products/presentation/screens/product_details_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
+import '../../features/recently_viewed/presentation/screens/recently_viewed_screen.dart';
 import '../../features/support/presentation/screens/admin_support_ticket_details_screen.dart';
 import '../../features/support/presentation/screens/admin_support_tickets_screen.dart';
 import '../../features/support/presentation/screens/create_support_ticket_screen.dart';
@@ -210,6 +211,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/compare',
         builder: (context, state) => const ComparisonScreen(),
+      ),
+      GoRoute(
+        path: '/recently-viewed',
+        builder: (context, state) => const RecentlyViewedScreen(),
       ),
     ],
   );

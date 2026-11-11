@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../../../comparison/presentation/widgets/comparison_button.dart';
+import '../../../recently_viewed/presentation/widgets/recently_viewed_section.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_state.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
@@ -199,6 +200,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                 productState.featuredProducts,
                 wishlistState,
               ),
+            ),
+
+          // Recently Viewed Products
+          if (productState.searchQuery.isEmpty &&
+              productState.selectedCategoryId == null &&
+              productState.selectedBrandId == null)
+            const SliverToBoxAdapter(
+              child: RecentlyViewedSection(),
             ),
 
           // Product section heading

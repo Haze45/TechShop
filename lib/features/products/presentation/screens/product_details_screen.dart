@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../comparison/presentation/providers/comparison_provider.dart';
 import '../../../comparison/presentation/widgets/comparison_button.dart';
+import '../../../recently_viewed/presentation/providers/recently_viewed_provider.dart';
 import '../../../reviews/presentation/widgets/product_reviews_section.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
@@ -19,6 +20,16 @@ class ProductDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productAsync = ref.watch(productDetailsProvider(productId));
+    ref.listen<AsyncValue<ProductEntity?>>(productDetailsProvider(productId), (
+      previous,
+      next,
+    ) {
+      next.whenData((product) {
+        if (product != null) {
+          ref.read(recentlyViewedProvider.notifier).addProduct(product.id);
+        }
+      });
+    });
     final wishlistAsync = ref.watch(wishlistViewModelProvider);
 
     final wishlistState = wishlistAsync.value;
