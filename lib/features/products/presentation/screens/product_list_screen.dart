@@ -11,8 +11,10 @@ import '../../../wishlist/presentation/viewmodels/wishlist_state.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
+import '../providers/recent_search_provider.dart';
 import '../viewmodels/product_state.dart';
 import '../widgets/product_card.dart';
+import '../widgets/search_suggestions.dart';
 
 class ProductListScreen extends ConsumerStatefulWidget {
   const ProductListScreen({super.key});
@@ -34,6 +36,21 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Future<void> _search(String query) async {
     await ref.read(productViewModelProvider.notifier).searchProducts(query);
+  }
+
+  Future<void> _submitSearch(String query) async {
+    final value = query.trim();
+
+    if (value.isEmpty) {
+      await _clearSearch();
+      return;
+    }
+
+    _debounce?.cancel();
+
+    ref.read(recentSearchProvider.notifier).addSearch(value);
+
+    await _search(value);
   }
 
   void _onSearchChanged(String query) {
@@ -162,10 +179,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                 controller: _searchController,
                 textInputAction: TextInputAction.search,
                 onChanged: _onSearchChanged,
-                onSubmitted: (query) {
-                  _debounce?.cancel();
-                  _search(query);
-                },
+                onSubmitted: _submitSearch,
                 decoration: InputDecoration(
                   hintText: 'Search smartphones and laptops',
                   prefixIcon: const Icon(Icons.search),
@@ -177,6 +191,18 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SearchSuggestions(
+                onSearchSelected: (query) {
+                  _searchController.text = query;
+                  _submitSearch(query);
+                },
               ),
             ),
           ),
@@ -206,9 +232,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
           if (productState.searchQuery.isEmpty &&
               productState.selectedCategoryId == null &&
               productState.selectedBrandId == null)
-            const SliverToBoxAdapter(
-              child: RecentlyViewedSection(),
-            ),
+            const SliverToBoxAdapter(child: RecentlyViewedSection()),
 
           // Product section heading
           SliverToBoxAdapter(
@@ -226,20 +250,48 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
           // Product grid
           if (productState.products.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.inventory_2_outlined,
-                      size: 55,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(height: 12),
-                    Text('No products found'),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        productState.searchQuery.isNotEmpty
+                            ? Icons.search_off
+                            : Icons.inventory_2_outlined,
+                        size: 60,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        productState.searchQuery.isNotEmpty
+                            ? 'No products found'
+                            : 'No products available',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        productState.searchQuery.isNotEmpty
+                            ? 'Try another product name, brand or SKU.'
+                            : 'There are currently no products to display.',
+                        textAlign: TextAlign.center,
+                      ),
+                      if (productState.searchQuery.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: _clearSearch,
+                          child: const Text('Clear Search'),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             )

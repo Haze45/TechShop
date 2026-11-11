@@ -107,6 +107,7 @@ class ProductRemoteDataSource {
   }
 
   // Search products.
+
   Future<List<ProductModel>> searchProducts(
     String query, {
     String sortOption = 'newest',
@@ -117,7 +118,8 @@ class ProductRemoteDataSource {
       return [];
     }
 
-    final response = await _sortProducts(
+    // Search product names, descriptions and SKUs.
+    final productResponse = await _sortProducts(
       supabase
           .from('products')
           .select('*, product_images(*)')
@@ -130,9 +132,63 @@ class ProductRemoteDataSource {
       sortOption,
     );
 
-    return response
-        .map<ProductModel>((json) => ProductModel.fromJson(json))
+    // Search matching brand names.
+    final brandResponse = await supabase
+        .from('brands')
+        .select('id')
+        .ilike('name', '%$searchQuery%');
+
+    final brandIds = brandResponse
+        .map<int>((brand) => brand['id'] as int)
         .toList();
+
+    // Fetch products belonging to matching brands.
+    List<dynamic> brandProducts = [];
+
+    if (brandIds.isNotEmpty) {
+      brandProducts = await _sortProducts(
+        supabase
+            .from('products')
+            .select('*, product_images(*)')
+            .eq('is_active', true)
+            .inFilter('brand_id', brandIds),
+        sortOption,
+      );
+    }
+
+    // Combine results and remove duplicates.
+    final Map<String, ProductModel> uniqueProducts = {};
+
+    for (final json in [...productResponse, ...brandProducts]) {
+      final product = ProductModel.fromJson(Map<String, dynamic>.from(json));
+
+      uniqueProducts[product.id] = product;
+    }
+
+    final products = uniqueProducts.values.toList();
+
+    switch (sortOption) {
+      case 'price_low_high':
+        products.sort((a, b) => a.price.compareTo(b.price));
+        break;
+
+      case 'price_high_low':
+        products.sort((a, b) => b.price.compareTo(a.price));
+        break;
+
+      case 'name_asc':
+        products.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        break;
+
+      case 'newest':
+      default:
+        products.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+    }
+
+    return products;
   }
 
   // Fetch categories.
