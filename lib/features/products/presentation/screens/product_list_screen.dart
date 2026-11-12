@@ -12,7 +12,9 @@ import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
 import '../providers/recent_search_provider.dart';
+import '../providers/recommendation_providers.dart';
 import '../viewmodels/product_state.dart';
+import '../widgets/personalized_recommendations_section.dart';
 import '../widgets/product_card.dart';
 import '../widgets/promotional_banner_carousel.dart';
 import '../widgets/search_suggestions.dart';
@@ -71,7 +73,12 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   }
 
   Future<void> _refresh() async {
-    await ref.read(productViewModelProvider.notifier).loadProducts();
+    ref.invalidate(personalizedRecommendationsProvider);
+
+    await Future.wait([
+      ref.read(productViewModelProvider.notifier).loadProducts(),
+      ref.read(personalizedRecommendationsProvider.future),
+    ]);
   }
 
   void _scrollToAllProducts() {
@@ -264,6 +271,14 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               productState.selectedCategoryId == null &&
               productState.selectedBrandId == null)
             const SliverToBoxAdapter(child: RecentlyViewedSection()),
+
+          // Personalized Recommendations
+          if (productState.searchQuery.isEmpty &&
+              productState.selectedCategoryId == null &&
+              productState.selectedBrandId == null)
+            const SliverToBoxAdapter(
+              child: PersonalizedRecommendationsSection(),
+            ),
 
           // Product section heading
           SliverToBoxAdapter(

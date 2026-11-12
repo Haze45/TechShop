@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/product_entity.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
+import '../providers/product_interaction_providers.dart';
+import '../providers/recommendation_providers.dart';
 
 class ProductPurchaseSection extends ConsumerStatefulWidget {
   final ProductEntity product;
@@ -39,6 +41,19 @@ class _ProductPurchaseSectionState
       await ref
           .read(cartViewModelProvider.notifier)
           .addToCart(productId: widget.product.id, quantity: _quantity);
+
+      // Track add-to-cart interaction
+      try {
+        await ref
+            .read(productInteractionRepositoryProvider)
+            .recordInteraction(
+              productId: widget.product.id,
+              interactionType: 'add_to_cart',
+            );
+        ref.invalidate(personalizedRecommendationsProvider);
+      } catch (error) {
+        debugPrint('Add-to-cart tracking failed: $error');
+      }
 
       if (!mounted) return;
 
@@ -173,6 +188,19 @@ class _ProductPurchaseSectionState
       await ref
           .read(cartViewModelProvider.notifier)
           .addToCart(productId: widget.product.id, quantity: _quantity);
+
+      // Track add-to-cart interaction
+      try {
+        await ref
+            .read(productInteractionRepositoryProvider)
+            .recordInteraction(
+              productId: widget.product.id,
+              interactionType: 'add_to_cart',
+            );
+        ref.invalidate(personalizedRecommendationsProvider);
+      } catch (error) {
+        debugPrint('Add-to-cart tracking failed: $error');
+      }
 
       if (!mounted) return;
 

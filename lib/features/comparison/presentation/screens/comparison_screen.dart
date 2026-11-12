@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../../../products/domain/entities/product_entity.dart';
+import '../../../products/presentation/providers/product_interaction_providers.dart';
 import '../../../products/presentation/providers/product_providers.dart';
 import '../providers/comparison_provider.dart';
 
@@ -263,6 +264,19 @@ class ComparisonScreen extends ConsumerWidget {
                                     productId: product.id,
                                     quantity: 1,
                                   );
+
+                              try {
+                                await ref
+                                    .read(productInteractionRepositoryProvider)
+                                    .recordInteraction(
+                                      productId: product.id,
+                                      interactionType: 'add_to_cart',
+                                    );
+                              } catch (error) {
+                                debugPrint(
+                                  'Add-to-cart tracking failed: $error',
+                                );
+                              }
 
                               if (!context.mounted) return;
 
