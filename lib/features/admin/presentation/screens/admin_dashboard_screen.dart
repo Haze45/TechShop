@@ -326,6 +326,22 @@ class AdminDashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
 
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.inventory_2_outlined),
+                        title: const Text('Inventory Management'),
+                        subtitle: const Text(
+                          'Manage stock and view inventory levels',
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          context.push('/admin/inventory');
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
                     // Review Management Navigation
                     Card(
                       child: ListTile(
@@ -355,6 +371,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                         },
                       ),
                     ),
+
                   ],
                 ),
               );

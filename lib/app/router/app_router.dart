@@ -6,9 +6,11 @@ import '../../features/addresses/presentation/screens/addresses_screen.dart';
 import '../../features/admin/presentation/screens/add_product_screen.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/providers/admin_providers.dart';
+import '../../features/admin/presentation/screens/admin_inventory_screen.dart';
 import '../../features/admin/presentation/screens/admin_order_details_screen.dart';
 import '../../features/admin/presentation/screens/admin_products_screen.dart';
 import '../../features/admin/presentation/screens/admin_reviews_screen.dart';
+import '../../features/admin/presentation/screens/admin_stock_history_screen.dart';
 import '../../features/admin/presentation/screens/edit_product_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -215,6 +217,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/recently-viewed',
         builder: (context, state) => const RecentlyViewedScreen(),
+      ),
+      GoRoute(
+        path: '/admin/inventory',
+        builder: (context, state) => const AdminInventoryScreen(),
+      ),
+      GoRoute(
+        path: '/admin/inventory/history/:productId',
+        builder: (context, state) {
+          final productId = state.pathParameters['productId']!;
+          final productName = state.extra as String? ?? 'Product';
+
+          return AdminStockHistoryScreen(
+            productId: productId,
+            productName: productName,
+          );
+        },
       ),
     ],
   );
