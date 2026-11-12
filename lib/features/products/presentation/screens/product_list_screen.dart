@@ -14,6 +14,7 @@ import '../providers/product_providers.dart';
 import '../providers/recent_search_provider.dart';
 import '../viewmodels/product_state.dart';
 import '../widgets/product_card.dart';
+import '../widgets/promotional_banner_carousel.dart';
 import '../widgets/search_suggestions.dart';
 
 class ProductListScreen extends ConsumerStatefulWidget {
@@ -25,6 +26,7 @@ class ProductListScreen extends ConsumerStatefulWidget {
 
 class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final GlobalKey _allProductsKey = GlobalKey();
   Timer? _debounce;
 
   @override
@@ -70,6 +72,19 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Future<void> _refresh() async {
     await ref.read(productViewModelProvider.notifier).loadProducts();
+  }
+
+  void _scrollToAllProducts() {
+    final targetContext = _allProductsKey.currentContext;
+
+    if (targetContext == null) return;
+
+    Scrollable.ensureVisible(
+      targetContext,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      alignment: 0.05,
+    );
   }
 
   @override
@@ -207,6 +222,9 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             ),
           ),
 
+          // Promotional Banner Carousel
+          const SliverToBoxAdapter(child: PromotionalBannerCarousel()),
+
           // Categories
           SliverToBoxAdapter(child: _buildCategories(productState)),
 
@@ -228,6 +246,19 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
               ),
             ),
 
+          // Recently Added Products
+          if (productState.searchQuery.isEmpty &&
+              productState.selectedCategoryId == null &&
+              productState.selectedBrandId == null &&
+              productState.products.isNotEmpty)
+            SliverToBoxAdapter(
+              child: _buildRecentlyAddedProducts(
+                productState.products,
+                wishlistState,
+                productState.featuredProducts,
+              ),
+            ),
+
           // Recently Viewed Products
           if (productState.searchQuery.isEmpty &&
               productState.selectedCategoryId == null &&
@@ -236,16 +267,8 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
           // Product section heading
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-              child: Text(
-                productState.searchQuery.isNotEmpty
-                    ? 'Search Results'
-                    : 'All Products',
-                style: Theme.of(context).textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
+            key: _allProductsKey,
+            child: _buildProductSectionHeader(productState),
           ),
 
           // Product grid
@@ -356,11 +379,11 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     },
                   );
                 }, childCount: productState.products.length),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.68,
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 220,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.58,
                 ),
               ),
             ),
@@ -397,85 +420,371 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
     );
   }
 
-  Widget _buildCategories(ProductState state) {
-    return SizedBox(
-      height: 55,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: const Text('All'),
-              selected: state.selectedCategoryId == null,
-              onSelected: (_) {
-                _searchController.clear();
+  Widget _buildProductSectionHeader(ProductState state) {
+    String title;
 
-                ref.read(productViewModelProvider.notifier).clearFilters();
-              },
+    if (state.searchQuery.isNotEmpty) {
+      title = 'Search Results';
+    } else if (state.selectedCategoryId != null ||
+        state.selectedBrandId != null) {
+      title = 'Filtered Products';
+    } else {
+      title = 'All Products';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Explore our latest smartphones and laptops',
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: Colors.grey),
+                ),
+              ],
             ),
           ),
-
-          ...state.categories.map((category) {
-            final id = (category['id'] as num).toInt();
-            final name = category['name'] as String? ?? 'Category';
-
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(name),
-                selected: state.selectedCategoryId == id,
-                onSelected: (_) {
-                  _searchController.clear();
-
-                  ref
-                      .read(productViewModelProvider.notifier)
-                      .filterByCategory(id);
-                },
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary
+                  .withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '${state.products.length} Loaded',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
               ),
-            );
-          }),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBrandFilters(ProductState state) {
-    return SizedBox(
-      height: 45,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          ChoiceChip(
-            label: const Text('All Brands'),
-            selected: state.selectedBrandId == null,
-            onSelected: (_) {
-              ref.read(productViewModelProvider.notifier).filterByBrand(null);
-            },
+  Widget _buildCategories(ProductState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          child: Text(
+            'Shop by Category',
+            style: Theme.of(context).textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
+        ),
 
-          const SizedBox(width: 8),
-
-          ...state.brands.map((brand) {
-            final brandId = (brand['id'] as num).toInt();
-
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(brand['name'] as String),
-                selected: state.selectedBrandId == brandId,
-                onSelected: (_) {
-                  ref
-                      .read(productViewModelProvider.notifier)
-                      .filterByBrand(brandId);
+        SizedBox(
+          height: 125,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              _buildCategoryCard(
+                name: 'All Products',
+                icon: Icons.devices_other,
+                color: const Color(0xFF1565C0),
+                isSelected: state.selectedCategoryId == null,
+                onTap: () {
+                  _searchController.clear();
+                  ref.read(productViewModelProvider.notifier).clearFilters();
                 },
               ),
-            );
-          }),
-        ],
+
+              ...state.categories.map((category) {
+                final id = (category['id'] as num).toInt();
+                final name = category['name'] as String? ?? 'Category';
+
+                final isSmartphone = name.toLowerCase().contains('smartphone');
+
+                return _buildCategoryCard(
+                  name: name,
+                  icon: isSmartphone ? Icons.smartphone : Icons.laptop_mac,
+                  color: isSmartphone
+                      ? const Color(0xFF00897B)
+                      : const Color(0xFF6A1B9A),
+                  isSelected: state.selectedCategoryId == id,
+                  onTap: () {
+                    _searchController.clear();
+
+                    ref
+                        .read(productViewModelProvider.notifier)
+                        .filterByCategory(id);
+                  },
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryCard({
+    required String name,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 115,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: isSelected ? 0.20 : 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? color : color.withValues(alpha: 0.20),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 38, color: color),
+            const SizedBox(height: 10),
+            Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildBrandFilters(ProductState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Shop by Brand',
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Text(
+                '${state.brands.length} Brands',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 44,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              _buildBrandChip(
+                label: 'All Brands',
+                selected: state.selectedBrandId == null,
+                onTap: () {
+                  ref
+                      .read(productViewModelProvider.notifier)
+                      .filterByBrand(null);
+                },
+              ),
+              const SizedBox(width: 8),
+              ...state.brands.map((brand) {
+                final brandId = (brand['id'] as num).toInt();
+                final brandName = brand['name'] as String;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _buildBrandChip(
+                    label: brandName,
+                    selected: state.selectedBrandId == brandId,
+                    onTap: () {
+                      ref
+                          .read(productViewModelProvider.notifier)
+                          .filterByBrand(brandId);
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBrandChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      showCheckmark: false,
+      selectedColor: colorScheme.primary,
+      backgroundColor: colorScheme.surface,
+      side: BorderSide(
+        color: selected ? colorScheme.primary : colorScheme.outlineVariant,
+      ),
+      labelStyle: TextStyle(
+        color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+    );
+  }
+
+  Widget _buildRecentlyAddedProducts(
+    List<ProductEntity> products,
+    WishlistState? wishlistState,
+    List<ProductEntity> featuredProducts,
+  ) {
+    final featuredIds = featuredProducts.map((p) => p.id).toSet();
+
+    final recentProducts =
+        products.where((product) => !featuredIds.contains(product.id)).toList()
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final latestProducts = recentProducts.take(10).toList();
+
+    if (latestProducts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Recently Added',
+                      style: Theme.of(context).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Discover our newest devices',
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: _scrollToAllProducts,
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 285,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: latestProducts.length,
+            itemBuilder: (context, index) {
+              final product = latestProducts[index];
+
+              return SizedBox(
+                width: 180,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ProductCard(
+                    product: product,
+                    isWishlisted:
+                        wishlistState?.containsProduct(product.id) ?? false,
+                    onTap: () {
+                      context.push('/product/${product.id}');
+                    },
+                    onWishlistTap: () async {
+                      try {
+                        final isAlreadyWishlisted =
+                            ref
+                                .read(wishlistViewModelProvider)
+                                .value
+                                ?.containsProduct(product.id) ??
+                            false;
+
+                        if (isAlreadyWishlisted) {
+                          await ref
+                              .read(wishlistViewModelProvider.notifier)
+                              .removeFromWishlist(product.id);
+                        } else {
+                          await ref
+                              .read(wishlistViewModelProvider.notifier)
+                              .addToWishlist(product.id);
+                        }
+
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isAlreadyWishlisted
+                                  ? 'Removed from wishlist'
+                                  : 'Added to wishlist',
+                            ),
+                          ),
+                        );
+                      } catch (error) {
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please log in to manage your wishlist.',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -488,10 +797,46 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-          child: Text(
-            'Featured Products',
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Featured Products',
+                      style: Theme.of(context).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Handpicked devices for you',
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary
+                      .withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${products.length} Products',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
 

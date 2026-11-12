@@ -11,7 +11,6 @@ import '../../../reviews/presentation/widgets/product_reviews_section.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
-import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../viewmodels/product_state.dart';
 import '../widgets/product_image_gallery.dart';
 import '../widgets/product_purchase_section.dart';
