@@ -4,6 +4,8 @@ class UserEntity {
   final String? fullName;
   final String? phone;
   final String? avatarUrl;
+  final DateTime? createdAt;
+  final DateTime? emailConfirmedAt;
 
   const UserEntity({
     required this.id,
@@ -11,5 +13,9 @@ class UserEntity {
     this.fullName,
     this.phone,
     this.avatarUrl,
+    this.createdAt,
+    this.emailConfirmedAt,
   });
+
+  bool get isEmailVerified => emailConfirmedAt != null;
 }

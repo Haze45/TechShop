@@ -218,6 +218,29 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
+  String _formatAccountDate(DateTime? date) {
+    if (date == null) return 'Not available';
+
+    final localDate = date.toLocal();
+
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    return '${localDate.day} ${months[localDate.month - 1]} ${localDate.year}';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authViewModelProvider);
@@ -279,10 +302,43 @@ class ProfileScreen extends ConsumerWidget {
                       subtitle: Text(user.email ?? 'Not available'),
                     ),
                     const Divider(height: 1),
+
+                    ListTile(
+                      leading: Icon(
+                        user.isEmailVerified
+                            ? Icons.verified_outlined
+                            : Icons.warning_amber_outlined,
+                        color: user.isEmailVerified
+                            ? Colors.green
+                            : Colors.orange,
+                      ),
+                      title: const Text('Email Verification'),
+                      subtitle: Text(
+                        user.isEmailVerified
+                            ? 'Email Verified'
+                            : 'Email Not Verified',
+                      ),
+                      trailing: Icon(
+                        user.isEmailVerified
+                            ? Icons.check_circle
+                            : Icons.error_outline,
+                        color: user.isEmailVerified
+                            ? Colors.green
+                            : Colors.orange,
+                      ),
+                    ),
+                    const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.phone_outlined),
                       title: const Text('Phone'),
                       subtitle: Text(user.phone ?? 'Not available'),
+                    ),
+                    const Divider(height: 1),
+
+                    ListTile(
+                      leading: const Icon(Icons.calendar_month_outlined),
+                      title: const Text('Account Created'),
+                      subtitle: Text(_formatAccountDate(user.createdAt)),
                     ),
                   ],
                 ),

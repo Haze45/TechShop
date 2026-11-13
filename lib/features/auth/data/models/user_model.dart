@@ -9,6 +9,8 @@ class UserModel extends UserEntity {
     super.fullName,
     super.phone,
     super.avatarUrl,
+    super.createdAt,
+    super.emailConfirmedAt,
   });
 
   factory UserModel.fromSupabaseUser(User user) {
@@ -20,6 +22,10 @@ class UserModel extends UserEntity {
       fullName: metadata['full_name'] as String?,
       phone: user.phone ?? metadata['phone'] as String?,
       avatarUrl: metadata['avatar_url'] as String?,
+      createdAt: DateTime.tryParse(user.createdAt),
+      emailConfirmedAt: user.emailConfirmedAt == null
+          ? null
+          : DateTime.tryParse(user.emailConfirmedAt!),
     );
   }
 
@@ -30,6 +36,8 @@ class UserModel extends UserEntity {
       fullName: fullName,
       phone: phone,
       avatarUrl: avatarUrl,
+      createdAt: createdAt,
+      emailConfirmedAt: emailConfirmedAt,
     );
   }
 }
