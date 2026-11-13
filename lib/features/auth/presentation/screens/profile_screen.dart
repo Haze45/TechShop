@@ -369,7 +369,7 @@ class ProfileScreen extends ConsumerWidget {
                 subtitle: const Text('Update your account password'),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
-                  context.push('/update-password');
+                  context.push('/change-password');
                 },
               ),
 

@@ -12,6 +12,7 @@ import '../../features/admin/presentation/screens/admin_products_screen.dart';
 import '../../features/admin/presentation/screens/admin_reviews_screen.dart';
 import '../../features/admin/presentation/screens/admin_stock_history_screen.dart';
 import '../../features/admin/presentation/screens/edit_product_screen.dart';
+import '../../features/auth/presentation/screens/change_password_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/profile_screen.dart';
@@ -233,6 +234,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             productName: productName,
           );
         },
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
     ],
   );

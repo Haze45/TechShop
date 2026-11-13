@@ -25,10 +25,12 @@ abstract class AuthRepository {
 
   Future<void> updatePassword({required String newPassword});
 
-  Future<void> updateProfile({
-    required String fullName,
-    required String phone,
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
   });
+
+  Future<void> updateProfile({required String fullName, required String phone});
 
   Future<String> uploadAvatar({
     required Uint8List imageBytes,

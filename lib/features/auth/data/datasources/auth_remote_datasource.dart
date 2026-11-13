@@ -217,6 +217,32 @@ class AuthRemoteDataSource {
     await supabase.auth.signOut();
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = supabase.auth.currentUser;
+
+    if (user == null) {
+      throw Exception('User is not logged in.');
+    }
+
+    final email = user.email;
+
+    if (email == null || email.isEmpty) {
+      throw Exception('Unable to verify your account email.');
+    }
+
+    // Verify the current password.
+    await supabase.auth.signInWithPassword(
+      email: email,
+      password: currentPassword,
+    );
+
+    // Update the password after successful verification.
+    await supabase.auth.updateUser(UserAttributes(password: newPassword));
+  }
+
   // =========================================
   // 6. AUTH STATE CHANGES
   // =========================================

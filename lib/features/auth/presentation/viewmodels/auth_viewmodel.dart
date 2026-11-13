@@ -137,6 +137,24 @@ class AuthViewModel extends AsyncNotifier<UserEntity?> {
     }
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await ref
+          .read(authRepositoryProvider)
+          .changePassword(
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+          );
+    } catch (error, stackTrace) {
+      debugPrint('Change password failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> updateProfile({
     required String fullName,
     required String phone,

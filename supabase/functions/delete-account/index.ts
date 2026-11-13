@@ -63,6 +63,30 @@ Deno.serve(async (req: Request) => {
       },
     });
 
+    // Check whether the user has existing orders.
+    const { data: existingOrders, error: orderError } = await adminClient
+      .from("orders")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (orderError) {
+      throw new Error("Unable to check existing orders.");
+    }
+
+    if (existingOrders && existingOrders.length > 0) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "This account has existing orders. Please contact support to request account deletion.",
+        }),
+        {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
     // Remove the user's profile pictures before deleting the Auth user.
     const bucket = adminClient.storage.from("user-avatars");
 

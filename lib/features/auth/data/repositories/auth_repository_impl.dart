@@ -70,6 +70,17 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) {
+    return remoteDataSource.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+  }
+
+  @override
   Future<void> updateProfile({
     required String fullName,
     required String phone,
