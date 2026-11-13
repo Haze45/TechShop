@@ -18,6 +18,25 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
   void initState() {
     super.initState();
     _pageController = PageController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _preloadNearbyImages(_selectedIndex);
+      }
+    });
+  }
+
+  void _preloadNearbyImages(int index) {
+    final indexes = [index - 1, index + 1];
+
+    for (final imageIndex in indexes) {
+      if (imageIndex >= 0 && imageIndex < widget.imageUrls.length) {
+        precacheImage(
+          CachedNetworkImageProvider(widget.imageUrls[imageIndex]),
+          context,
+        );
+      }
+    }
   }
 
   @override
@@ -51,6 +70,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                 itemCount: widget.imageUrls.length,
                 onPageChanged: (index) {
                   setState(() => _selectedIndex = index);
+                  _preloadNearbyImages(index);
                 },
                 itemBuilder: (context, index) {
                   return GestureDetector(
@@ -61,6 +81,12 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                         imageUrl: widget.imageUrls[index],
                         fit: BoxFit.contain,
                         width: double.infinity,
+
+                        memCacheWidth: 900,
+                        memCacheHeight: 900,
+                        maxWidthDiskCache: 1200,
+                        maxHeightDiskCache: 1200,
+
                         placeholder: (_, _) =>
                             const Center(child: CircularProgressIndicator()),
                         errorWidget: (_, _, _) =>
@@ -136,7 +162,22 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                     child: CachedNetworkImage(
                       imageUrl: widget.imageUrls[index],
                       fit: BoxFit.contain,
-                      errorWidget: (_, _, _) => const Icon(Icons.broken_image),
+
+                      memCacheWidth: 200,
+                      memCacheHeight: 200,
+                      maxWidthDiskCache: 300,
+                      maxHeightDiskCache: 300,
+
+                      placeholder: (_, _) => const Center(
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+
+                      errorWidget: (_, _, _) =>
+                          const Icon(Icons.broken_image, size: 22),
                     ),
                   ),
                 );
@@ -202,6 +243,8 @@ class _FullScreenProductImageState extends State<_FullScreenProductImage> {
               child: CachedNetworkImage(
                 imageUrl: widget.imageUrls[index],
                 fit: BoxFit.contain,
+                memCacheWidth: 1600,
+                memCacheHeight: 1600,
                 placeholder: (_, _) => const CircularProgressIndicator(),
                 errorWidget: (_, _, _) => const Icon(
                   Icons.broken_image,

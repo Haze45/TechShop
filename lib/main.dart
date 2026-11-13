@@ -15,6 +15,11 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  PaintingBinding.instance.imageCache.maximumSize = 200;
+
+  PaintingBinding.instance.imageCache.maximumSizeBytes =
+      100 * 1024 * 1024;
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

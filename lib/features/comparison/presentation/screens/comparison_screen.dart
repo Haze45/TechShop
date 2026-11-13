@@ -198,14 +198,15 @@ class ComparisonScreen extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: products.map((product) {
-          final imageUrl = product.images.isNotEmpty
-              ? product.images
-                    .firstWhere(
-                      (image) => image.isPrimary,
-                      orElse: () => product.images.first,
-                    )
-                    .imageUrl
-              : null;
+          final primaryImages = product.images.where(
+            (image) => image.isPrimary,
+          );
+
+          final imageUrl = product.images.isEmpty
+              ? null
+              : (primaryImages.isNotEmpty
+                    ? primaryImages.first.imageUrl
+                    : product.images.first.imageUrl);
 
           return Container(
             width: 190,

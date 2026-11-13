@@ -66,9 +66,19 @@ class ProductCard extends ConsumerWidget {
                         : CachedNetworkImage(
                             imageUrl: imageUrl,
                             fit: BoxFit.contain,
+
+                            // Reduce decoded image memory usage.
+                            memCacheWidth: 400,
+                            memCacheHeight: 400,
+
+                            // Limit the size of the cached disk image.
+                            maxWidthDiskCache: 600,
+                            maxHeightDiskCache: 600,
+
                             placeholder: (context, url) => const Center(
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
+
                             errorWidget: (context, url, error) => const Center(
                               child: Icon(
                                 Icons.broken_image_outlined,

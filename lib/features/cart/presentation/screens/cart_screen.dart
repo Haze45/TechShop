@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -136,10 +137,13 @@ class CartScreen extends ConsumerWidget {
                 height: 110,
                 color: Colors.grey.shade100,
                 child: primaryImage != null
-                    ? Image.network(
-                        primaryImage,
+                    ? CachedNetworkImage(
+                        imageUrl: primaryImage,
                         fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => const Icon(
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        errorWidget: (context, url, error) => const Icon(
                           Icons.image_not_supported_outlined,
                           size: 35,
                         ),
