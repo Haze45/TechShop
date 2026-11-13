@@ -207,6 +207,47 @@ Deno.serve(async (req: Request) => {
       throw new Error("Required Supabase or Firebase secrets are missing.");
     }
 
+    // Check whether the customer has enabled order notifications.
+    const preferencesResponse = await fetch(
+      `${supabaseUrl}/rest/v1/user_notification_preferences?user_id=eq.${encodeURIComponent(userId)}&select=order_updates_enabled`,
+      {
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+        },
+      },
+    );
+
+    if (!preferencesResponse.ok) {
+      throw new Error("Unable to retrieve notification preferences.");
+    }
+
+    const preferences = await preferencesResponse.json();
+
+    // No saved preference means notifications are enabled by default.
+    const orderUpdatesEnabled =
+      !Array.isArray(preferences) ||
+      preferences.length === 0 ||
+      preferences[0].order_updates_enabled !== false;
+
+    if (!orderUpdatesEnabled) {
+      console.log(`Order notifications disabled for user: ${userId}`);
+
+      return new Response(
+        JSON.stringify({
+          message: "Customer has disabled order notifications.",
+          notificationsSkipped: true,
+        }),
+        {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }
+
     const serviceAccount = JSON.parse(
       serviceAccountJson,
     ) as FirebaseServiceAccount;

@@ -360,6 +360,16 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 12),
 
               ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text('Settings'),
+                subtitle: const Text('Appearance and app preferences'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/settings'),
+              ),
+
+              const Divider(height: 1),
+
+              ListTile(
                 leading: const Icon(Icons.location_on_outlined),
                 title: const Text('My Addresses'),
                 subtitle: const Text('Manage delivery addresses'),

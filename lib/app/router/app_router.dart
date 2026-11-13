@@ -27,6 +27,10 @@ import '../../features/products/domain/entities/product_entity.dart';
 import '../../features/products/presentation/screens/product_details_screen.dart';
 import '../../features/products/presentation/screens/product_list_screen.dart';
 import '../../features/recently_viewed/presentation/screens/recently_viewed_screen.dart';
+import '../../features/settings/presentation/screens/about_screen.dart';
+import '../../features/settings/presentation/screens/privacy_policy_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/settings/presentation/screens/terms_conditions_screen.dart';
 import '../../features/support/presentation/screens/admin_support_ticket_details_screen.dart';
 import '../../features/support/presentation/screens/admin_support_tickets_screen.dart';
 import '../../features/support/presentation/screens/create_support_ticket_screen.dart';
@@ -109,6 +113,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: '/privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+
+      GoRoute(
+        path: '/terms-conditions',
+        builder: (context, state) => const TermsConditionsScreen(),
       ),
       GoRoute(
         path: '/product/:productId',
@@ -239,6 +260,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/change-password',
         builder: (context, state) => const ChangePasswordScreen(),
       ),
+
     ],
   );
 });
