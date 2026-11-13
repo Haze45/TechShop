@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../cart/presentation/viewmodels/cart_viewmodel.dart';
 import '../../../comparison/presentation/widgets/comparison_button.dart';
 import '../../../recently_viewed/presentation/widgets/recently_viewed_section.dart';
-import '../../../wishlist/presentation/viewmodels/wishlist_state.dart';
 import '../../../wishlist/presentation/viewmodels/wishlist_viewmodel.dart';
 import '../../domain/entities/product_entity.dart';
 import '../providers/product_providers.dart';
@@ -97,11 +96,20 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     final productAsync = ref.watch(productViewModelProvider);
-    final cartAsync = ref.watch(cartViewModelProvider);
-    final cartItemCount = cartAsync.value?.totalItems ?? 0;
-    final wishlistAsync = ref.watch(wishlistViewModelProvider);
-    final wishlistState = wishlistAsync.value;
-    final wishlistItemCount = wishlistState?.totalItems ?? 0;
+    final cartItemCount = ref.watch(
+      cartViewModelProvider.select(
+        (asyncValue) => asyncValue.value?.totalItems ?? 0,
+      ),
+    );
+    final wishlistProductIds = ref.watch(
+      wishlistViewModelProvider.select(
+        (asyncValue) => asyncValue.value?.wishlist?.items
+            .map((item) => item.productId)
+            .toSet(),
+      ),
+    );
+
+    final wishlistItemCount = wishlistProductIds?.length ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -178,7 +186,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
         ),
 
         data: (productState) {
-          return _buildProductContent(productState, wishlistState);
+          return _buildProductContent(productState, wishlistProductIds);
         },
       ),
     );
@@ -186,7 +194,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Widget _buildProductContent(
     ProductState productState,
-    WishlistState? wishlistState,
+    Set<String>? wishlistProductIds,
   ) {
     return RefreshIndicator(
       onRefresh: _refresh,
@@ -249,7 +257,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             SliverToBoxAdapter(
               child: _buildFeaturedProducts(
                 productState.featuredProducts,
-                wishlistState,
+                wishlistProductIds,
               ),
             ),
 
@@ -261,7 +269,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             SliverToBoxAdapter(
               child: _buildRecentlyAddedProducts(
                 productState.products,
-                wishlistState,
+                wishlistProductIds,
                 productState.featuredProducts,
               ),
             ),
@@ -337,63 +345,67 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               sliver: SliverGrid(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final product = productState.products[index];
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final product = productState.products[index];
 
-                  return ProductCard(
-                    product: product,
+                    return ProductCard(
+                      product: product,
 
-                    isWishlisted:
-                        wishlistState?.containsProduct(product.id) ?? false,
+                      isWishlisted:
+                          wishlistProductIds?.contains(product.id) ?? false,
 
-                    onTap: () {
-                      context.push('/product/${product.id}');
-                    },
+                      onTap: () {
+                        context.push('/product/${product.id}');
+                      },
 
-                    onWishlistTap: () async {
-                      try {
-                        final isAlreadyWishlisted =
-                            ref
-                                .read(wishlistViewModelProvider)
-                                .value
-                                ?.containsProduct(product.id) ??
-                            false;
+                      onWishlistTap: () async {
+                        try {
+                          final isAlreadyWishlisted =
+                              ref
+                                  .read(wishlistViewModelProvider)
+                                  .value
+                                  ?.containsProduct(product.id) ??
+                              false;
 
-                        if (isAlreadyWishlisted) {
-                          await ref
-                              .read(wishlistViewModelProvider.notifier)
-                              .removeFromWishlist(product.id);
-                        } else {
-                          await ref
-                              .read(wishlistViewModelProvider.notifier)
-                              .addToWishlist(product.id);
+                          if (isAlreadyWishlisted) {
+                            await ref
+                                .read(wishlistViewModelProvider.notifier)
+                                .removeFromWishlist(product.id);
+                          } else {
+                            await ref
+                                .read(wishlistViewModelProvider.notifier)
+                                .addToWishlist(product.id);
+                          }
+
+                          if (!context.mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                isAlreadyWishlisted
+                                    ? 'Removed from wishlist'
+                                    : 'Added to wishlist',
+                              ),
+                            ),
+                          );
+                        } catch (error) {
+                          if (!context.mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Please log in to manage your wishlist.',
+                              ),
+                            ),
+                          );
                         }
-
-                        if (!context.mounted) return;
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              isAlreadyWishlisted
-                                  ? 'Removed from wishlist'
-                                  : 'Added to wishlist',
-                            ),
-                          ),
-                        );
-                      } catch (error) {
-                        if (!context.mounted) return;
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Please log in to manage your wishlist.',
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  );
-                }, childCount: productState.products.length),
+                      },
+                    );
+                  },
+                  childCount: productState.products.length,
+                  addAutomaticKeepAlives: false,
+                ),
                 gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 220,
                   mainAxisSpacing: 14,
@@ -404,7 +416,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
             ),
 
           // Pagination
-          if (productState.hasMore && productState.searchQuery.isEmpty)
+          if (productState.hasMore)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -684,7 +696,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Widget _buildRecentlyAddedProducts(
     List<ProductEntity> products,
-    WishlistState? wishlistState,
+    Set<String>? wishlistProductIds,
     List<ProductEntity> featuredProducts,
   ) {
     final featuredIds = featuredProducts.map((p) => p.id).toSet();
@@ -747,7 +759,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                   child: ProductCard(
                     product: product,
                     isWishlisted:
-                        wishlistState?.containsProduct(product.id) ?? false,
+                        wishlistProductIds?.contains(product.id) ?? false,
                     onTap: () {
                       context.push('/product/${product.id}');
                     },
@@ -805,7 +817,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
 
   Widget _buildFeaturedProducts(
     List<ProductEntity> products,
-    WishlistState? wishlistState,
+    Set<String>? wishlistProductIds,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -870,7 +882,7 @@ class _ProductListScreenState extends ConsumerState<ProductListScreen> {
                     product: products[index],
 
                     isWishlisted:
-                        wishlistState?.containsProduct(products[index].id) ??
+                        wishlistProductIds?.contains(products[index].id) ??
                         false,
 
                     onTap: () {

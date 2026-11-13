@@ -277,7 +277,7 @@ class ProductDetailsScreen extends ConsumerWidget {
 
                 const SizedBox(height: 28),
 
-                _buildRelatedProducts(context, catalogState, product),
+                _buildRelatedProducts(context, ref, product),
 
                 const SizedBox(height: 28),
 
@@ -635,132 +635,146 @@ class ProductDetailsScreen extends ConsumerWidget {
 
   Widget _buildRelatedProducts(
     BuildContext context,
-    ProductState? catalogState,
+    WidgetRef ref,
     ProductEntity currentProduct,
   ) {
-    final relatedProducts = (catalogState?.products ?? [])
-        .where(
-          (product) =>
-              product.categoryId == currentProduct.categoryId &&
-              product.id != currentProduct.id &&
-              product.isActive,
-        )
-        .take(10)
-        .toList();
+    final relatedProductsAsync = ref.watch(
+      relatedProductsProvider(currentProduct.id),
+    );
 
-    if (relatedProducts.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    return relatedProductsAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: CircularProgressIndicator()),
+      ),
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Related Products',
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
+      error: (error, stackTrace) {
+        debugPrint('Related products loading failed: $error');
+        return const SizedBox.shrink();
+      },
 
-        const SizedBox(height: 16),
+      data: (relatedProducts) {
+        if (relatedProducts.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-        SizedBox(
-          height: 245,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: relatedProducts.length,
-            itemBuilder: (context, index) {
-              final product = relatedProducts[index];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                'Related Products',
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
 
-              return GestureDetector(
-                onTap: () {
-                  context.push('/product/${product.id}');
-                },
-                child: Container(
-                  width: 155,
-                  margin: const EdgeInsets.only(right: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.grey.withValues(alpha: 0.25),
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12),
+            const SizedBox(height: 16),
+
+            SizedBox(
+              height: 245,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: relatedProducts.length,
+                itemBuilder: (context, index) {
+                  final product = relatedProducts[index];
+
+                  return GestureDetector(
+                    onTap: () {
+                      context.push('/product/${product.id}');
+                    },
+                    child: Container(
+                      width: 155,
+                      margin: const EdgeInsets.only(right: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.25),
                         ),
-                        child: SizedBox(
-                          height: 135,
-                          width: double.infinity,
-                          child: product.images.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: product.images.first.imageUrl,
-                                  fit: BoxFit.contain,
-                                  placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator(),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(12),
+                            ),
+                            child: SizedBox(
+                              height: 135,
+                              width: double.infinity,
+                              child: product.images.isNotEmpty
+                                  ? CachedNetworkImage(
+                                      imageUrl: product.images.first.imageUrl,
+                                      fit: BoxFit.contain,
+                                      placeholder: (context, url) =>
+                                          const Center(
+                                            child: CircularProgressIndicator(),
+                                          ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.image_not_supported),
+                                    )
+                                  : const Icon(
+                                      Icons.image_not_supported,
+                                      size: 40,
+                                    ),
+                            ),
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.image_not_supported),
-                                )
-                              : const Icon(Icons.image_not_supported, size: 40),
-                        ),
-                      ),
+                                ),
 
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product.name,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
+                                const SizedBox(height: 6),
+
+                                Text(
+                                  '₹${product.price.toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                  ),
+                                ),
+                              ],
                             ),
-
-                            const SizedBox(height: 6),
-
-                            Text(
-                              '₹${product.price.toStringAsFixed(0)}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Future<void> _shareProduct(ProductEntity product) async {
     final productDetails =
         '''
-Check out this product on TechShop!
+            Check out this product on TechShop!
 
-${product.name}
+            ${product.name}
 
-Price: ₹${product.price.toStringAsFixed(2)}
+            Price: ₹${product.price.toStringAsFixed(2)}
 
-${product.description ?? 'Explore this product on TechShop.'}
+            ${product.description ?? 'Explore this product on TechShop.'}
 
-''';
+        ''';
 
     await SharePlus.instance.share(
       ShareParams(subject: product.name, text: productDetails),

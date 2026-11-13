@@ -8,8 +8,15 @@ class SearchProductsUseCase {
 
   Future<List<ProductEntity>> call(
     String query, {
+    int page = 0,
+    int limit = 10,
     String sortOption = 'newest',
   }) {
-    return repository.searchProducts(query, sortOption: sortOption);
+    return repository.searchProducts(
+      query,
+      page: page,
+      limit: limit,
+      sortOption: sortOption,
+    );
   }
 }

@@ -13,7 +13,11 @@ class ProductRepositoryImpl implements ProductRepository {
     int limit = 10,
     String sortOption = 'newest',
   }) {
-    return remoteDataSource.getProducts(page: page, limit: limit);
+    return remoteDataSource.getProducts(
+      page: page,
+      limit: limit,
+      sortOption: sortOption,
+    );
   }
 
   @override
@@ -37,6 +41,7 @@ class ProductRepositoryImpl implements ProductRepository {
       categoryId: categoryId,
       page: page,
       limit: limit,
+      sortOption: sortOption,
     );
   }
 
@@ -51,15 +56,36 @@ class ProductRepositoryImpl implements ProductRepository {
       brandId: brandId,
       page: page,
       limit: limit,
+      sortOption: sortOption,
     );
   }
 
   @override
   Future<List<ProductEntity>> searchProducts(
     String query, {
+    int page = 0,
+    int limit = 10,
     String sortOption = 'newest',
   }) {
-    return remoteDataSource.searchProducts(query);
+    return remoteDataSource.searchProducts(
+      query,
+      page: page,
+      limit: limit,
+      sortOption: sortOption,
+    );
+  }
+
+  @override
+  Future<List<ProductEntity>> getRelatedProducts({
+    required int categoryId,
+    required String excludeProductId,
+    int limit = 10,
+  }) {
+    return remoteDataSource.getRelatedProducts(
+      categoryId: categoryId,
+      excludeProductId: excludeProductId,
+      limit: limit,
+    );
   }
 
   @override

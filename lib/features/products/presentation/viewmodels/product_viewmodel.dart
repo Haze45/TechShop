@@ -50,6 +50,8 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     if (query.isNotEmpty) {
       return ref.read(searchProductsUseCaseProvider)(
         query,
+        page: page,
+        limit: pageSize,
         sortOption: sortOption,
       );
     }
@@ -162,10 +164,18 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     state = const AsyncLoading();
 
     try {
-      final products = await _fetchProducts(page: 0, current: current);
+      final products = await _fetchProducts(
+        page: 0,
+        current: current,
+      );
 
       state = AsyncData(
-        current.copyWith(products: products, currentPage: 0, hasMore: false),
+        current.copyWith(
+          products: products,
+          currentPage: 0,
+          hasMore: products.length == pageSize,
+          isLoadingMore: false,
+        ),
       );
     } catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
@@ -205,11 +215,6 @@ class ProductViewModel extends AsyncNotifier<ProductState> {
     final current = _currentState;
 
     if (current.isLoadingMore || !current.hasMore) {
-      return;
-    }
-
-    // Search currently returns all matching results without pagination.
-    if (current.searchQuery.trim().isNotEmpty) {
       return;
     }
 

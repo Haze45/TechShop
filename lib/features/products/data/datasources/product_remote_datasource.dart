@@ -5,6 +5,32 @@ import '../models/product_model.dart';
 class ProductRemoteDataSource {
   final SupabaseClient supabase;
 
+  static const String _productSelect = '''
+  id,
+  category_id,
+  brand_id,
+  name,
+  slug,
+  sku,
+  description,
+  price,
+  compare_at_price,
+  stock_quantity,
+  specifications,
+  is_active,
+  is_featured,
+  created_at,
+  updated_at,
+  product_images (
+    id,
+    product_id,
+    image_url,
+    alt_text,
+    display_order,
+    is_primary
+  )
+''';
+
   ProductRemoteDataSource(this.supabase);
 
   // Fetch all active products.
@@ -17,10 +43,7 @@ class ProductRemoteDataSource {
     final to = from + limit - 1;
 
     final response = await _sortProducts(
-      supabase
-          .from('products')
-          .select('*, product_images(*)')
-          .eq('is_active', true),
+      supabase.from('products').select(_productSelect).eq('is_active', true),
       sortOption,
     ).range(from, to);
 
@@ -33,7 +56,7 @@ class ProductRemoteDataSource {
   Future<List<ProductModel>> getFeaturedProducts({int limit = 10}) async {
     final response = await supabase
         .from('products')
-        .select('*, product_images(*)')
+        .select(_productSelect)
         .eq('is_active', true)
         .eq('is_featured', true)
         .order('created_at', ascending: false)
@@ -48,7 +71,7 @@ class ProductRemoteDataSource {
   Future<ProductModel?> getProductById(String productId) async {
     final response = await supabase
         .from('products')
-        .select('*, product_images(*)')
+        .select(_productSelect)
         .eq('id', productId)
         .eq('is_active', true)
         .maybeSingle();
@@ -71,7 +94,7 @@ class ProductRemoteDataSource {
     final response = await _sortProducts(
       supabase
           .from('products')
-          .select('*, product_images(*)')
+          .select(_productSelect)
           .eq('category_id', categoryId)
           .eq('is_active', true),
       sortOption,
@@ -95,7 +118,7 @@ class ProductRemoteDataSource {
     final response = await _sortProducts(
       supabase
           .from('products')
-          .select('*, product_images(*)')
+          .select(_productSelect)
           .eq('brand_id', brandId)
           .eq('is_active', true),
       sortOption,
@@ -110,6 +133,8 @@ class ProductRemoteDataSource {
 
   Future<List<ProductModel>> searchProducts(
     String query, {
+    int page = 0,
+    int limit = 10,
     String sortOption = 'newest',
   }) async {
     final searchQuery = query.trim();
@@ -118,89 +143,82 @@ class ProductRemoteDataSource {
       return [];
     }
 
-    // Search product names, descriptions and SKUs.
-    final productResponse = await _sortProducts(
-      supabase
-          .from('products')
-          .select('*, product_images(*)')
-          .eq('is_active', true)
-          .or(
-            'name.ilike.%$searchQuery%,'
-            'description.ilike.%$searchQuery%,'
-            'sku.ilike.%$searchQuery%',
-          ),
-      sortOption,
+    // Get one page of matching product records.
+    final response = await supabase.rpc(
+      'search_products_paginated',
+      params: {
+        'p_query': searchQuery,
+        'p_page': page,
+        'p_limit': limit,
+        'p_sort_option': sortOption,
+      },
     );
 
-    // Search matching brand names.
-    final brandResponse = await supabase
-        .from('brands')
-        .select('id')
-        .ilike('name', '%$searchQuery%');
-
-    final brandIds = brandResponse
-        .map<int>((brand) => brand['id'] as int)
+    final productIds = (response as List)
+        .map((item) => item['id'] as String)
         .toList();
 
-    // Fetch products belonging to matching brands.
-    List<dynamic> brandProducts = [];
-
-    if (brandIds.isNotEmpty) {
-      brandProducts = await _sortProducts(
-        supabase
-            .from('products')
-            .select('*, product_images(*)')
-            .eq('is_active', true)
-            .inFilter('brand_id', brandIds),
-        sortOption,
-      );
+    if (productIds.isEmpty) {
+      return [];
     }
 
-    // Combine results and remove duplicates.
-    final Map<String, ProductModel> uniqueProducts = {};
+    // Fetch product records along with their images.
+    final productsResponse = await supabase
+        .from('products')
+        .select(_productSelect)
+        .inFilter('id', productIds);
 
-    for (final json in [...productResponse, ...brandProducts]) {
+    final productsById = <String, ProductModel>{};
+
+    for (final json in productsResponse) {
       final product = ProductModel.fromJson(Map<String, dynamic>.from(json));
 
-      uniqueProducts[product.id] = product;
+      productsById[product.id] = product;
     }
 
-    final products = uniqueProducts.values.toList();
+    // Maintain the order returned by the RPC.
+    return productIds
+        .map((id) => productsById[id])
+        .whereType<ProductModel>()
+        .toList();
+  }
 
-    switch (sortOption) {
-      case 'price_low_high':
-        products.sort((a, b) => a.price.compareTo(b.price));
-        break;
+  // Fetch related products from the same category.
+  Future<List<ProductModel>> getRelatedProducts({
+    required int categoryId,
+    required String excludeProductId,
+    int limit = 10,
+  }) async {
+    final response = await supabase
+        .from('products')
+        .select(_productSelect)
+        .eq('category_id', categoryId)
+        .eq('is_active', true)
+        .neq('id', excludeProductId)
+        .order('created_at', ascending: false)
+        .limit(limit);
 
-      case 'price_high_low':
-        products.sort((a, b) => b.price.compareTo(a.price));
-        break;
-
-      case 'name_asc':
-        products.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
-        break;
-
-      case 'newest':
-      default:
-        products.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        break;
-    }
-
-    return products;
+    return response
+        .map<ProductModel>((json) => ProductModel.fromJson(json))
+        .toList();
   }
 
   // Fetch categories.
   Future<List<Map<String, dynamic>>> getCategories() async {
-    final response = await supabase.from('categories').select().order('name');
+    final response = await supabase
+        .from('categories')
+        .select('id, name')
+        .order('name');
 
     return List<Map<String, dynamic>>.from(response);
   }
 
   // Fetch brands.
   Future<List<Map<String, dynamic>>> getBrands() async {
-    final response = await supabase.from('brands').select().order('name');
+    final response = await supabase
+        .from('brands')
+        .select('id, name')
+        .order('name');
 
     return List<Map<String, dynamic>>.from(response);
   }

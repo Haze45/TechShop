@@ -30,12 +30,18 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
     final indexes = [index - 1, index + 1];
 
     for (final imageIndex in indexes) {
-      if (imageIndex >= 0 && imageIndex < widget.imageUrls.length) {
-        precacheImage(
-          CachedNetworkImageProvider(widget.imageUrls[imageIndex]),
-          context,
-        );
+      if (imageIndex < 0 || imageIndex >= widget.imageUrls.length) {
+        continue;
       }
+
+      final imageUrl = widget.imageUrls[imageIndex];
+
+      if (imageUrl.isEmpty) continue;
+
+      precacheImage(
+        CachedNetworkImageProvider(imageUrl, maxWidth: 900, maxHeight: 900),
+        context,
+      );
     }
   }
 
@@ -177,7 +183,7 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                       ),
 
                       errorWidget: (_, _, _) =>
-                          const Icon(Icons.broken_image, size: 22),
+                          const Icon(Icons.broken_image, size: 20),
                     ),
                   ),
                 );

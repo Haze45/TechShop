@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../comparison/presentation/providers/comparison_provider.dart';
 import '../../domain/entities/product_entity.dart';
 
-class ProductCard extends ConsumerWidget {
+class ProductCard extends StatelessWidget {
   final ProductEntity product;
   final VoidCallback? onTap;
   final bool isWishlisted;
@@ -36,11 +36,8 @@ class ProductCard extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final imageUrl = _primaryImage;
-
-    final comparisonIds = ref.watch(comparisonProvider);
-    final isCompared = comparisonIds.contains(product.id);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -66,19 +63,13 @@ class ProductCard extends ConsumerWidget {
                         : CachedNetworkImage(
                             imageUrl: imageUrl,
                             fit: BoxFit.contain,
-
-                            // Reduce decoded image memory usage.
                             memCacheWidth: 400,
                             memCacheHeight: 400,
-
-                            // Limit the size of the cached disk image.
                             maxWidthDiskCache: 600,
                             maxHeightDiskCache: 600,
-
                             placeholder: (context, url) => const Center(
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
-
                             errorWidget: (context, url, error) => const Center(
                               child: Icon(
                                 Icons.broken_image_outlined,
@@ -140,57 +131,7 @@ class ProductCard extends ConsumerWidget {
                   Positioned(
                     bottom: 8,
                     right: 8,
-                    child: Material(
-                      color: Colors.white,
-                      shape: const CircleBorder(),
-                      child: IconButton(
-                        tooltip: isCompared
-                            ? 'Remove from comparison'
-                            : 'Compare product',
-                        icon: Icon(
-                          isCompared
-                              ? Icons.compare_arrows
-                              : Icons.compare_arrows_outlined,
-                          color: isCompared ? Colors.blue : Colors.grey,
-                        ),
-                        iconSize: 20,
-                        constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
-                        ),
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          try {
-                            if (isCompared) {
-                              ref
-                                  .read(comparisonProvider.notifier)
-                                  .removeProduct(product.id);
-                            } else {
-                              ref
-                                  .read(comparisonProvider.notifier)
-                                  .addProduct(
-                                    product.id,
-                                    categoryId: product.categoryId,
-                                  );
-                            }
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isCompared
-                                      ? 'Removed from comparison'
-                                      : 'Added to comparison',
-                                ),
-                              ),
-                            );
-                          } catch (error) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(error.toString())),
-                            );
-                          }
-                        },
-                      ),
-                    ),
+                    child: _ProductComparisonButton(product: product),
                   ),
 
                   if (!product.isInStock)
@@ -266,6 +207,60 @@ class ProductCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ProductComparisonButton extends ConsumerWidget {
+  final ProductEntity product;
+
+  const _ProductComparisonButton({required this.product});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isCompared = ref.watch(
+      comparisonProvider.select(
+        (comparisonIds) => comparisonIds.contains(product.id),
+      ),
+    );
+
+    return Material(
+      color: Colors.white,
+      shape: const CircleBorder(),
+      child: IconButton(
+        tooltip: isCompared ? 'Remove from comparison' : 'Compare product',
+        icon: Icon(
+          Icons.compare_arrows,
+          color: isCompared ? Colors.blue : Colors.grey,
+        ),
+        iconSize: 20,
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        padding: EdgeInsets.zero,
+        onPressed: () {
+          try {
+            final notifier = ref.read(comparisonProvider.notifier);
+
+            if (isCompared) {
+              notifier.removeProduct(product.id);
+            } else {
+              notifier.addProduct(product.id, categoryId: product.categoryId);
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  isCompared
+                      ? 'Removed from comparison'
+                      : 'Added to comparison',
+                ),
+              ),
+            );
+          } catch (error) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(error.toString())));
+          }
+        },
       ),
     );
   }

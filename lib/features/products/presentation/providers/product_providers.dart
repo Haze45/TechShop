@@ -10,6 +10,7 @@ import '../../domain/usecases/get_featured_products_usecase.dart';
 import '../../domain/usecases/get_product_details_usecase.dart';
 import '../../domain/usecases/get_products_by_category_usecase.dart';
 import '../../domain/usecases/get_products_by_brand_usecase.dart';
+import '../../domain/usecases/get_related_products_usecase.dart';
 import '../../domain/usecases/search_products_usecase.dart';
 import '../../domain/usecases/get_categories_usecase.dart';
 import '../../domain/usecases/get_brands_usecase.dart';
@@ -58,6 +59,12 @@ final getProductDetailsUseCaseProvider = Provider<GetProductDetailsUseCase>((
   return GetProductDetailsUseCase(ref.watch(productRepositoryProvider));
 });
 
+final getRelatedProductsUseCaseProvider = Provider<GetRelatedProductsUseCase>((
+  ref,
+) {
+  return GetRelatedProductsUseCase(ref.watch(productRepositoryProvider));
+});
+
 final getProductsByCategoryUseCaseProvider =
     Provider<GetProductsByCategoryUseCase>((ref) {
       return GetProductsByCategoryUseCase(ref.watch(productRepositoryProvider));
@@ -91,3 +98,18 @@ final productDetailsProvider = FutureProvider.family<ProductEntity?, String>((
 ) {
   return ref.watch(getProductDetailsUseCaseProvider)(productId);
 });
+
+final relatedProductsProvider =
+    FutureProvider.family<List<ProductEntity>, String>((ref, productId) async {
+      final product = await ref.watch(productDetailsProvider(productId).future);
+
+      if (product == null) {
+        return [];
+      }
+
+      return ref.watch(getRelatedProductsUseCaseProvider)(
+        categoryId: product.categoryId,
+        excludeProductId: product.id,
+        limit: 10,
+      );
+    });

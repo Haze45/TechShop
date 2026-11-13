@@ -27,7 +27,15 @@ abstract class ProductRepository {
 
   Future<List<ProductEntity>> searchProducts(
     String query, {
+    int page = 0,
+    int limit = 10,
     String sortOption = 'newest',
+  });
+
+  Future<List<ProductEntity>> getRelatedProducts({
+    required int categoryId,
+    required String excludeProductId,
+    int limit = 10,
   });
 
   Future<List<Map<String, dynamic>>> getCategories();
